@@ -15,25 +15,41 @@
 
 ## 主要功能
 
-- PassWall，仅保留 Xray 组件
+- PassWall，保留 Xray 和 Hysteria 组件
+- SmartDNS，包含 LuCI 管理页和 WebUI 仪表盘，默认不启用
 - Aurora 主题和配置插件
 - 晶晨宝盒，方便后续在线升级
 - IPv6 基础支持
 - USB 网络共享，支持手机 USB 共享网络
-- Samba/CIFS、WOL、TTYD、FRP Client 等常用插件
+- Samba、WOL、TTYD 等常用插件
 - Turbo ACC 网络加速插件
 
 ## PassWall 配置
 
-PassWall 使用新版官方源引入，并只保留 Xray：
+PassWall 使用新版官方源引入，并保留 Xray 和 Hysteria：
 
 ```config
 CONFIG_PACKAGE_luci-app-passwall=y
 CONFIG_PACKAGE_xray-core=y
 CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Xray=y
+CONFIG_PACKAGE_hysteria=y
+CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Hysteria=y
 ```
 
 已显式关闭会触发旧包下载的组件，例如 Haproxy、Shadowsocks、ShadowsocksR、Simple Obfs、Trojan Plus、V2ray Plugin。
+
+## SmartDNS 配置
+
+SmartDNS 已编入固件，并启用 WebUI 仪表盘；默认服务不启用，不会直接接管系统默认的 dnsmasq。
+
+```config
+CONFIG_PACKAGE_smartdns=y
+CONFIG_PACKAGE_smartdns-ui=y
+CONFIG_PACKAGE_luci-app-smartdns=y
+CONFIG_PACKAGE_luci-app-smartdns_INCLUDE_smartdns_ui=y
+```
+
+如果后续在 LuCI 中把 SmartDNS 端口设置为 `53`，它会接管主 DNS；如果使用其他端口，则可以作为 dnsmasq 的上游 DNS。WebUI 默认端口通常为 `6080`，默认账号密码为 `admin` / `password`。
 
 ## 主题
 
@@ -48,6 +64,7 @@ CONFIG_PACKAGE_luci-app-aurora-config=y
 
 - [eamonxg/luci-theme-aurora](https://github.com/eamonxg/luci-theme-aurora)
 - [eamonxg/luci-app-aurora-config](https://github.com/eamonxg/luci-app-aurora-config)
+- [peditx/luci-theme-peditx](https://github.com/peditx/luci-theme-peditx)：已加入备选并参与编译，可在 LuCI 后台切换；主题自带 `/etc/config/peditx` 配置
 
 ## 构建说明
 

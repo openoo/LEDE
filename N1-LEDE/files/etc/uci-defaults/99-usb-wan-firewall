@@ -1,0 +1,20 @@
+#!/bin/sh
+
+wan_zone=""
+
+for section in $(uci show firewall | sed -n "s/^\(firewall\.[^=]*\)=zone$/\1/p"); do
+	[ "$(uci -q get "$section.name")" = "wan" ] && {
+		wan_zone="$section"
+		break
+	}
+done
+
+[ -n "$wan_zone" ] || exit 0
+
+uci -q del_list "$wan_zone.network=usbv4"
+uci -q del_list "$wan_zone.network=usbv6"
+uci add_list "$wan_zone.network=usbv4"
+uci add_list "$wan_zone.network=usbv6"
+uci commit firewall
+
+exit 0
