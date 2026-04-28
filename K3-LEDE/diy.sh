@@ -21,13 +21,16 @@ git clone --depth=1 https://github.com/li1507/k3screenctrl_build.git package/lea
 
 # 可选 K3 原厂 WiFi 固件：效果较好，但该固件不能设置 WiFi 密码。
 if [ "$K3_FACTORY_WIFI" = "true" ]; then
-  k3_firmware_dir="package/lean/k3-firmware/files"
-  [ -d "$k3_firmware_dir" ] || {
-    echo "K3 firmware package directory not found: $k3_firmware_dir"
+  if [ -d "package/lean/k3-firmware/files" ]; then
+    k3_firmware_file="package/lean/k3-firmware/files/brcmfmac4366c-pcie.bin"
+  elif [ -d "package/lean/k3-brcmfmac4366c-firmware/files/lib/firmware/brcm" ]; then
+    k3_firmware_file="package/lean/k3-brcmfmac4366c-firmware/files/lib/firmware/brcm/brcmfmac4366c-pcie.bin"
+  else
+    echo "K3 firmware package directory not found"
     exit 1
-  }
+  fi
   wget -nv "https://raw.githubusercontent.com/yangxu52/Phicomm-k3-Wireless-Firmware/master/brcmfmac4366c-pcie.bin.k3" \
-    -O "$k3_firmware_dir/brcmfmac4366c-pcie.bin"
+    -O "$k3_firmware_file"
 fi
 
 # Default IP

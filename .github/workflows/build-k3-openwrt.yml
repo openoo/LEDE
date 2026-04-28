@@ -9,7 +9,7 @@ permissions:
 
 env:
     REPO_URL: https://github.com/coolsnowwolf/lede
-    REPO_BRANCH: master
+    REPO_COMMIT: 79cd677bce338bd570a4e014079f6f08e3eba5cc
     CONFIG_FILE: K3-LEDE/.config
     DIY_SH: K3-LEDE/diy.sh
     FILES: K3-LEDE/files
@@ -70,7 +70,12 @@ jobs:
             - name: 🌱 克隆 OpenWrt 源码
               working-directory: /workdir
               run: |
-                  git clone --single-branch --depth=1 --branch="$REPO_BRANCH" "$REPO_URL" openwrt
+                  git init openwrt
+                  cd openwrt
+                  git remote add origin "$REPO_URL"
+                  git fetch --depth=1 origin "$REPO_COMMIT"
+                  git checkout FETCH_HEAD
+                  cd ..
                   ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
                   sed -i 's|https://github.com/coolsnowwolf/luci.git;openwrt-23.05|https://github.com/coolsnowwolf/luci.git;openwrt-25.12|g' openwrt/feeds.conf.default
 
@@ -84,10 +89,10 @@ jobs:
                       /workdir/openwrt/build_dir/toolchain-*
                       /workdir/openwrt/staging_dir/host
                       /workdir/openwrt/staging_dir/toolchain-*
-                  key: ${{ runner.os }}-openwrt-K3-${{ matrix.variant }}-${{ env.REPO_BRANCH }}-${{ hashFiles('K3-LEDE/.config') }}
+                  key: ${{ runner.os }}-openwrt-K3-${{ matrix.variant }}-${{ env.REPO_COMMIT }}-${{ hashFiles('K3-LEDE/.config') }}
                   restore-keys: |
-                      ${{ runner.os }}-openwrt-K3-${{ matrix.variant }}-${{ env.REPO_BRANCH }}-
-                      ${{ runner.os }}-openwrt-K3-${{ env.REPO_BRANCH }}-
+                      ${{ runner.os }}-openwrt-K3-${{ matrix.variant }}-${{ env.REPO_COMMIT }}-
+                      ${{ runner.os }}-openwrt-K3-${{ env.REPO_COMMIT }}-
 
             - name: 🛠️ 准备脚本和配置
               run: |
@@ -186,6 +191,7 @@ jobs:
                   body: |
                       基于 Lean OpenWrt 构建
                       设备: 斐讯 K3
+                      源码固定: coolsnowwolf/lede 79cd677，bcm53xx 使用 5.4 内核
                       默认管理地址: 10.10.10.1
                       默认账户: root
                       默认密码: password
