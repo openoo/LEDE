@@ -11,7 +11,6 @@ git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-package
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/passwall-luci
 
 # Add packages
-git clone --depth=1 https://github.com/ophub/luci-app-amlogic package/amlogic
 git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora package/luci-theme-aurora
 git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/luci-app-aurora-config
 
@@ -24,6 +23,33 @@ git clone --depth=1 https://github.com/li1507/k3screenctrl_build.git package/lea
 firmware="69027"
 k3_firmware_url="https://github.com/li1507/Phicomm-k3-Wireless-Firmware/raw/master/brcmfmac4366c-pcie.bin.${firmware}"
 k3_firmware_dir="package/lean/k3-brcmfmac4366c-firmware/files/lib/firmware/brcm"
+mkdir -p "$k3_firmware_dir"
+cat > package/lean/k3-brcmfmac4366c-firmware/Makefile <<'EOF'
+include $(TOPDIR)/rules.mk
+
+PKG_NAME:=k3-brcmfmac4366c-firmware
+PKG_VERSION:=69027
+PKG_RELEASE:=1
+
+include $(INCLUDE_DIR)/package.mk
+
+define Package/k3-brcmfmac4366c-firmware
+  SECTION:=firmware
+  CATEGORY:=Firmware
+  TITLE:=PHICOMM K3 BCM4366C firmware
+  DEPENDS:=@TARGET_bcm53xx
+endef
+
+define Build/Compile
+endef
+
+define Package/k3-brcmfmac4366c-firmware/install
+	$(INSTALL_DIR) $(1)/lib/firmware/brcm
+	$(INSTALL_DATA) ./files/lib/firmware/brcm/brcmfmac4366c-pcie.bin $(1)/lib/firmware/brcm/brcmfmac4366c-pcie.bin
+endef
+
+$(eval $(call BuildPackage,k3-brcmfmac4366c-firmware))
+EOF
 wget -nv "$k3_firmware_url" -O "$k3_firmware_dir/brcmfmac4366c-pcie.bin"
 
 # Default IP
