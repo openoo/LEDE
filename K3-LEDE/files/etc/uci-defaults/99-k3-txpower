@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# K3 Web 无线功率设置可能不生效，开机后用 iwconfig 固定到 20 dBm。
+if [ -x /etc/init.d/k3-txpower ]; then
+	/etc/init.d/k3-txpower enable
+fi
+
+exit 0

@@ -11,7 +11,8 @@
 - 默认账号：`root`
 - 默认密码：`password`
 - 构建方式：GitHub Actions 手动触发
-- Workflow：[build-n1-openwrt.yml](.github/workflows/build-n1-openwrt.yml)
+- N1 Workflow：[build-n1-openwrt.yml](.github/workflows/build-n1-openwrt.yml)
+- K3 Workflow：[build-k3-openwrt.yml](.github/workflows/build-k3-openwrt.yml)
 
 ## 主要功能
 
@@ -50,13 +51,15 @@ CONFIG_PACKAGE_luci-app-aurora-config=y
 
 - [eamonxg/luci-theme-aurora](https://github.com/eamonxg/luci-theme-aurora)
 - [eamonxg/luci-app-aurora-config](https://github.com/eamonxg/luci-app-aurora-config)
-- [peditx/luci-theme-peditx](https://github.com/peditx/luci-theme-peditx)：已加入备选并参与编译，可在 LuCI 后台切换；主题自带 `/etc/config/peditx` 配置
 
 ## 构建说明
 
-进入 GitHub Actions，手动运行 `📦 编译 N1 OpenWrt`。
+进入 GitHub Actions，按设备手动运行对应 workflow：
 
-构建流程会：
+- N1：`📦 编译 N1 OpenWrt`
+- K3：`📦 编译 K3 OpenWrt`
+
+N1 构建流程会：
 
 1. 释放 GitHub Actions 编译空间
 2. 克隆 LEDE master 源码
@@ -67,13 +70,22 @@ CONFIG_PACKAGE_luci-app-aurora-config=y
 7. 编译并使用 `openwrt_packit` 打包 N1 固件
 8. 自动发布到 GitHub Release
 
+K3 构建流程复用同一套 LEDE master 和 LuCI `openwrt-25.12` 源，直接编译 `bcm53xx/generic` 的 K3 `trx` 固件，不使用 Amlogic 打包器。
+K3 会按社区方案替换 li1507 的屏幕插件/驱动和 69027 版 Broadcom 无线固件。
+K3 保留正常路由器的 WAN/LAN 交换机布局，USB 共享网络通过 uci-defaults 追加 `usbv4/usbv6` 到 wan 区。
+K3 预置 `iwconfig`，开机后将 `wlan0/wlan1` 发射功率固定为 20 dBm；无线地区、149+ 信道和 80 MHz 频宽建议在 LuCI 中手动设置。
+
 ## 目录说明
 
 - `N1-LEDE/.config`：N1 固件编译配置
 - `N1-LEDE/diy.sh`：自定义软件源、PassWall、主题和默认设置
 - `N1-LEDE/files`：预置到固件里的配置文件
+- `K3-LEDE/.config`：K3 固件编译配置
+- `K3-LEDE/diy.sh`：K3 自定义软件源、PassWall、主题和默认设置
+- `K3-LEDE/files`：K3 启动时追加 USB 共享网络接口的预置脚本
 - `deps/ubuntu.txt`：GitHub Actions 编译依赖
 - `.github/workflows/build-n1-openwrt.yml`：N1 自动编译 workflow
+- `.github/workflows/build-k3-openwrt.yml`：K3 自动编译 workflow
 
 ## 截图
 
