@@ -73,7 +73,7 @@ N1 构建流程会：
 K3 构建流程复用同一套 LEDE master 和 LuCI `openwrt-25.12` 源，直接编译 `bcm53xx/generic` 的 K3 `trx` 固件，不使用 Amlogic 打包器。
 K3 会按社区方案替换 li1507 的屏幕插件/驱动，并同时生成两个无线固件版本：LEDE 自带 `k3wifi` 固件版，以及 K3 原厂 WiFi 固件版。
 K3 保留正常路由器的 WAN/LAN 交换机布局，USB 共享网络通过 uci-defaults 追加 `usbv4/usbv6` 到 wan 区。
-LEDE 自带无线固件版预置 `iwconfig`，开机后将 `wlan0/wlan1` 发射功率固定为 20 dBm；K3 原厂 WiFi 固件版不包含该启动项，并在固件文件名和 Release 说明中标注不能设置 WiFi 密码。
+LEDE 自带无线固件版预置 `iwconfig`，开机后将 `wlan0/wlan1` 发射功率固定为 20 dBm；K3 原厂 WiFi 固件版不包含该启动项，并在固件文件名中标注 `factory-wifi-noset`，表示不能设置 WiFi 密码。
 无线地区、149+ 信道和 80 MHz 频宽建议在 LuCI 中手动设置。
 
 ## 目录说明

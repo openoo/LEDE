@@ -27,7 +27,7 @@ jobs:
                       variant_name: LEDE 自带无线固件
                       factory_wifi: "false"
                       txpower: "true"
-                    - variant: factory-wifi-no-password
+                    - variant: factory-wifi-noset
                       variant_name: K3 原厂 WiFi 固件（不能设置 WiFi 密码）
                       factory_wifi: "true"
                       txpower: "false"
@@ -148,11 +148,10 @@ jobs:
               run: |
                   test -d openwrt/bin/targets/bcm53xx/generic
                   mkdir -p release_artifacts
-                  for file in openwrt/bin/targets/bcm53xx/generic/*; do
+                  for file in openwrt/bin/targets/bcm53xx/generic/*phicomm_k3*.trx; do
                     [ -f "$file" ] || continue
                     cp -a "$file" "release_artifacts/k3-${{ matrix.variant }}-$(basename "$file")"
                   done
-                  cp -a openwrt/.config release_artifacts/k3-${{ matrix.variant }}-build.config
 
             - name: 📤 上传 K3 固件产物
               if: ${{ steps.compile.outputs.status == 'success' && !cancelled() }}
@@ -193,7 +192,7 @@ jobs:
 
                       本次 K3 同时发布两个无线固件版本：
                       1. k3-lede-wifi-*：使用 LEDE 源码自带 k3wifi 固件，包含 iwconfig 开机设置 wlan0/wlan1 为 20 dBm。
-                      2. k3-factory-wifi-no-password-*：使用 K3 原厂 WiFi 固件 brcmfmac4366c-pcie.bin.k3，效果较好，但不能设置 WiFi 密码，且不包含 iwconfig 开机功率脚本。
+                      2. k3-factory-wifi-noset-*：使用 K3 原厂 WiFi 固件 brcmfmac4366c-pcie.bin.k3，效果较好，但不能设置 WiFi 密码，且不包含 iwconfig 开机功率脚本。
 
             - name: 🗑️ 清理旧版本发布
               uses: actions/github-script@v8
