@@ -10,11 +10,6 @@ rm -rf package/passwall-packages package/passwall-luci
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages package/passwall-packages
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/passwall-luci
 
-# SmartDNS：后端进程和 LuCI 管理界面分开引入。
-rm -rf feeds/packages/net/smartdns feeds/luci/applications/luci-app-smartdns
-git clone --depth=1 https://github.com/pymumu/openwrt-smartdns feeds/packages/net/smartdns
-git clone --depth=1 https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
-
 # Add packages
 git clone --depth=1 https://github.com/ophub/luci-app-amlogic package/amlogic
 git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora package/luci-theme-aurora

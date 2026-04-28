@@ -48,11 +48,7 @@ jobs:
               run: |
                   sudo -E apt-get -qq update --fix-missing
                   sudo -E apt-get -qq full-upgrade -y
-                  curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
                   sudo -E apt-get -qq install -y $(cat "$GITHUB_WORKSPACE/deps/ubuntu.txt")
-                  sudo -E apt-get -qq install -y nodejs
-                  node -v
-                  npm -v
                   sudo -E apt-get -qq autoremove --purge -y
                   sudo -E apt-get -qq clean
                   sudo timedatectl set-timezone "$TZ"
