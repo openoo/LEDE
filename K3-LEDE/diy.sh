@@ -19,6 +19,17 @@ rm -rf package/lean/luci-app-k3screenctrl package/lean/k3screenctrl
 git clone --depth=1 https://github.com/li1507/luci-app-k3screenctrl.git package/lean/luci-app-k3screenctrl
 git clone --depth=1 https://github.com/li1507/k3screenctrl_build.git package/lean/k3screenctrl
 
+# 可选 K3 原厂 WiFi 固件：效果较好，但该固件不能设置 WiFi 密码。
+if [ "$K3_FACTORY_WIFI" = "true" ]; then
+  k3_firmware_dir="package/lean/k3-firmware/files"
+  [ -d "$k3_firmware_dir" ] || {
+    echo "K3 firmware package directory not found: $k3_firmware_dir"
+    exit 1
+  }
+  wget -nv "https://raw.githubusercontent.com/yangxu52/Phicomm-k3-Wireless-Firmware/master/brcmfmac4366c-pcie.bin.k3" \
+    -O "$k3_firmware_dir/brcmfmac4366c-pcie.bin"
+fi
+
 # Default IP
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 
