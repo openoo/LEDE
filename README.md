@@ -1,102 +1,95 @@
 # N1 LEDE / K3 ImmortalWrt
 
-斐讯 N1 和 K3 自用固件配置：N1 基于 [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)，K3 基于 [immortalwrt/immortalwrt](https://github.com/immortalwrt/immortalwrt) `openwrt-24.10`。
-
-当前目标是保持固件干净、功能明确：只保留日常主路由需要的组件，默认使用 PassWall 作为代理插件，主题使用 Aurora。
+斐讯 N1 和斐讯 K3 的自用 OpenWrt 构建配置。N1 保留 LEDE 线，K3 已切换到 ImmortalWrt 24.10 线。
 
 ## 基本信息
 
-- 设备：斐讯 N1、斐讯 K3
 - 默认管理地址：`10.10.10.1`
 - 默认账号：`root`
 - 默认密码：`password`
-- 构建方式：GitHub Actions 手动触发
 - N1 Workflow：[build-n1-openwrt.yml](.github/workflows/build-n1-openwrt.yml)
 - K3 Workflow：[build-k3-immortalwrt.yml](.github/workflows/build-k3-immortalwrt.yml)
 
-## 主要功能
+## 源码和内核
 
-- PassWall，保留 Xray 和 Hysteria 组件
-- Aurora 主题和配置插件
-- 晶晨宝盒，方便后续在线升级
-- IPv6 基础支持
-- USB 网络共享，支持手机 USB 共享网络
-- Samba、WOL、TTYD 等常用插件
-- N1 保留 Turbo ACC；K3 使用 ImmortalWrt 24.10，暂不启用 Turbo ACC 和 HomeProxy
+N1：
 
-## PassWall 配置
+- OpenWrt 源码：[coolsnowwolf/lede](https://github.com/coolsnowwolf/lede) `master`
+- LuCI feed：构建时调整到 [coolsnowwolf/luci](https://github.com/coolsnowwolf/luci) `openwrt-25.12`
+- 固件打包：[unifreq/openwrt_packit](https://github.com/unifreq/openwrt_packit)
+- 设备 SOC：`s905d`
+- 内核版本：`5.15.196`
+- N1 内核来源：[breakingbadboy/OpenWrt kernel_stable](https://github.com/breakingbadboy/OpenWrt/releases/tag/kernel_stable)
 
-PassWall 使用新版官方源引入，并保留 Xray 和 Hysteria：
+K3：
 
-```config
-CONFIG_PACKAGE_luci-app-passwall=y
-CONFIG_PACKAGE_xray-core=y
-CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Xray=y
-CONFIG_PACKAGE_hysteria=y
-CONFIG_PACKAGE_luci-app-passwall_INCLUDE_Hysteria=y
-```
+- OpenWrt 源码：[immortalwrt/immortalwrt](https://github.com/immortalwrt/immortalwrt) `openwrt-24.10`
+- 目标平台：`bcm53xx/generic`
+- 固件格式：K3 原生 `trx`
+- 内核版本：ImmortalWrt 24.10 bcm53xx 默认 6.6 系列
+- K3 WiFi 普通版使用 ImmortalWrt 自带 `brcmfmac-firmware-4366c0-pcie-k3`
+- K3 原厂 WiFi 版使用 [yangxu52/Phicomm-k3-Wireless-Firmware](https://github.com/yangxu52/Phicomm-k3-Wireless-Firmware) 的 `brcmfmac4366c-pcie.bin.k3`
 
-已显式关闭会触发旧包下载的组件，例如 Haproxy、Shadowsocks、ShadowsocksR、Simple Obfs、Trojan Plus、V2ray Plugin。
+## N1 diy.sh
 
-## 主题
+[N1-LEDE/diy.sh](N1-LEDE/diy.sh) 在 LEDE 源码拉取后执行，主要做这些事：
 
-当前只启用 Aurora：
+- 替换 Go 工具链为 [sbwml/packages_lang_golang](https://github.com/sbwml/packages_lang_golang) `26.x`，降低 PassWall 和现代 Go 插件编译失败概率
+- 移除 feeds 中容易和新版 PassWall 冲突的旧核心包
+- 引入新版 PassWall：
+  - [Openwrt-Passwall/openwrt-passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)
+  - [Openwrt-Passwall/openwrt-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)
+- 引入晶晨宝盒：[ophub/luci-app-amlogic](https://github.com/ophub/luci-app-amlogic)
+- 引入 Aurora 主题和配置：
+  - [eamonxg/luci-theme-aurora](https://github.com/eamonxg/luci-theme-aurora)
+  - [eamonxg/luci-app-aurora-config](https://github.com/eamonxg/luci-app-aurora-config)
+- 修改默认管理地址为 `10.10.10.1`
+- 在 `rc.local` 中启动 `usbmuxd`，用于 iOS USB 共享网络相关通信
+- 调整 autocore 首页时间显示格式
 
-```config
-CONFIG_PACKAGE_luci-theme-aurora=y
-CONFIG_PACKAGE_luci-app-aurora-config=y
-```
+## K3 diy.sh
 
-主题源码来自：
+[K3-ImmortalWrt/diy.sh](K3-ImmortalWrt/diy.sh) 在 ImmortalWrt 源码拉取后执行，主要做这些事：
 
-- [eamonxg/luci-theme-aurora](https://github.com/eamonxg/luci-theme-aurora)
-- [eamonxg/luci-app-aurora-config](https://github.com/eamonxg/luci-app-aurora-config)
+- 替换 Go 工具链为 [sbwml/packages_lang_golang](https://github.com/sbwml/packages_lang_golang) `26.x`
+- 移除 feeds 中容易和新版 PassWall 冲突的旧核心包
+- 引入新版 PassWall：
+  - [Openwrt-Passwall/openwrt-passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)
+  - [Openwrt-Passwall/openwrt-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)
+- 引入 Aurora 主题和配置：
+  - [eamonxg/luci-theme-aurora](https://github.com/eamonxg/luci-theme-aurora)
+  - [eamonxg/luci-app-aurora-config](https://github.com/eamonxg/luci-app-aurora-config)
+- 引入 K3 屏幕插件和驱动：
+  - [li1507/luci-app-k3screenctrl](https://github.com/li1507/luci-app-k3screenctrl)
+  - [li1507/k3screenctrl_build](https://github.com/li1507/k3screenctrl_build)
+- K3 处理方式参考 [rmoyulong/Lite_OpenWrt](https://github.com/rmoyulong/Lite_OpenWrt) 的 ImmortalWrt K3 构建思路
+- 当 workflow 矩阵变量 `K3_FACTORY_WIFI=true` 时，下载 K3 原厂 WiFi 固件并覆盖源码中的 `brcmfmac4366c-pcie.bin`
+- 修改默认管理地址为 `10.10.10.1`
+- 在 `rc.local` 中启动 `usbmuxd`，用于 iOS USB 共享网络相关通信
+- 调整 autocore 首页时间显示格式
 
-## 构建说明
+## K3 双 WiFi 固件
 
-进入 GitHub Actions，按设备手动运行对应 workflow：
+K3 workflow 会同时构建两个固件：
 
-- N1：`📦 编译 N1 OpenWrt`
-- K3：`📦 编译 K3 ImmortalWrt`
+- `k3-imm-wifi-*`：使用 ImmortalWrt 自带 K3 WiFi 固件，保留 `iwconfig` 开机设置 `wlan0/wlan1` 为 20 dBm
+- `k3-factory-wifi-noset-*`：使用 K3 原厂 WiFi 固件，实测可启动、USB 共享和屏幕正常，但不能设置 WiFi 密码，不包含 `iwconfig` 功率脚本
 
-N1 构建流程会：
+## 主要插件
 
-1. 释放 GitHub Actions 编译空间
-2. 克隆 LEDE master 源码
-3. 将 LuCI feed 调整为 `openwrt-25.12`
-4. 替换新版 Go 工具链
-5. 引入新版 PassWall 源
-6. 写入 N1 配置和自定义文件
-7. 编译并使用 `openwrt_packit` 打包 N1 固件
-8. 自动发布到 GitHub Release
-
-K3 构建流程使用 `immortalwrt/immortalwrt` 的 `openwrt-24.10` 分支，使用 bcm53xx 6.6 内核，直接编译 `bcm53xx/generic` 的 K3 `trx` 固件，不使用 Amlogic 打包器。
-K3 会按社区方案替换 li1507 的屏幕插件/驱动，并同时生成两个无线固件版本：ImmortalWrt 自带 K3 WiFi 固件版，以及 K3 原厂 WiFi 固件版。
-K3 保留正常路由器的 WAN/LAN 交换机布局，USB 共享网络通过 uci-defaults 追加 `usbv4/usbv6` 到 wan 区。
-ImmortalWrt 自带无线固件版预置 `iwconfig`，开机后将 `wlan0/wlan1` 发射功率固定为 20 dBm，并在固件文件名中标注 `imm-wifi`；K3 原厂 WiFi 固件版不包含该启动项，并在固件文件名中标注 `factory-wifi-noset`，表示不能设置 WiFi 密码。
-无线地区、149+ 信道和 80 MHz 频宽建议在 LuCI 中手动设置。
+- PassWall：保留 Xray 和 Hysteria，关闭旧组件以减少下载和编译失败
+- Aurora：当前唯一启用主题
+- N1：保留晶晨宝盒、Turbo ACC
+- K3：保留 K3 屏幕控制、Samba、WOL、TTYD、USB 共享网络支持；不启用 Turbo ACC 和 HomeProxy
 
 ## 目录说明
 
-- `N1-LEDE/.config`：N1 固件编译配置
-- `N1-LEDE/diy.sh`：自定义软件源、PassWall、主题和默认设置
-- `N1-LEDE/files`：预置到固件里的配置文件
-- `K3-ImmortalWrt/.config`：K3 固件编译配置
-- `K3-ImmortalWrt/diy.sh`：K3 自定义软件源、PassWall、主题和默认设置
-- `K3-ImmortalWrt/files`：K3 启动时追加 USB 共享网络接口的预置脚本
-- `deps/ubuntu.txt`：GitHub Actions 编译依赖
-- `.github/workflows/build-n1-openwrt.yml`：N1 自动编译 workflow
-- `.github/workflows/build-k3-immortalwrt.yml`：K3 自动编译 workflow
-
-## 截图
-
-![主页](/images/chrome_ov39v3vv6T.png)
-![网络接口](/images/IDVMY33fsO.png)
-
-## 致谢
-
-- N1 源码基于 [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)
-- K3 源码基于 [immortalwrt/immortalwrt](https://github.com/immortalwrt/immortalwrt)
-- 固件打包使用 [unifreq/openwrt_packit](https://github.com/unifreq/openwrt_packit)
-- N1 内核来自 [breakingbadboy/OpenWrt](https://github.com/breakingbadboy/OpenWrt/releases/tag/kernel_stable)
-- 原始项目参考 [fightroad/N1-OpenWrt](https://github.com/fightroad/N1-OpenWrt)
+- [N1-LEDE/.config](N1-LEDE/.config)：N1 编译配置
+- [N1-LEDE/diy.sh](N1-LEDE/diy.sh)：N1 自定义脚本
+- [N1-LEDE/files](N1-LEDE/files)：N1 预置文件
+- [K3-ImmortalWrt/.config](K3-ImmortalWrt/.config)：K3 编译配置
+- [K3-ImmortalWrt/diy.sh](K3-ImmortalWrt/diy.sh)：K3 自定义脚本
+- [K3-ImmortalWrt/files](K3-ImmortalWrt/files)：K3 预置文件
+- [deps/ubuntu.txt](deps/ubuntu.txt)：GitHub Actions 编译依赖
+- [.github/workflows/build-n1-openwrt.yml](.github/workflows/build-n1-openwrt.yml)：N1 自动编译 workflow
+- [.github/workflows/build-k3-immortalwrt.yml](.github/workflows/build-k3-immortalwrt.yml)：K3 自动编译 workflow
