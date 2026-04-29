@@ -1,4 +1,4 @@
-name: 📦 编译 K3 OpenWrt
+name: 📦 编译 K3 ImmortalWrt
 
 on:
     workflow_dispatch:
@@ -8,8 +8,8 @@ permissions:
     actions: write
 
 env:
-    REPO_URL: https://github.com/coolsnowwolf/lede
-    REPO_COMMIT: 79cd677bce338bd570a4e014079f6f08e3eba5cc
+    REPO_URL: https://github.com/immortalwrt/immortalwrt
+    REPO_BRANCH: openwrt-24.10
     CONFIG_FILE: K3-LEDE/.config
     DIY_SH: K3-LEDE/diy.sh
     FILES: K3-LEDE/files
@@ -23,8 +23,8 @@ jobs:
             fail-fast: false
             matrix:
                 include:
-                    - variant: lede-wifi
-                      variant_name: LEDE 自带无线固件
+                    - variant: imm-wifi
+                      variant_name: ImmortalWrt 自带无线固件
                       factory_wifi: "false"
                       txpower: "true"
                     - variant: factory-wifi-noset
@@ -70,14 +70,8 @@ jobs:
             - name: 🌱 克隆 OpenWrt 源码
               working-directory: /workdir
               run: |
-                  git init openwrt
-                  cd openwrt
-                  git remote add origin "$REPO_URL"
-                  git fetch --depth=1 origin "$REPO_COMMIT"
-                  git checkout FETCH_HEAD
-                  cd ..
+                  git clone --single-branch --depth=1 --branch="$REPO_BRANCH" "$REPO_URL" openwrt
                   ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
-                  sed -i 's|https://github.com/coolsnowwolf/luci.git;openwrt-23.05|https://github.com/coolsnowwolf/luci.git;openwrt-25.12|g' openwrt/feeds.conf.default
 
             - name: 💾 缓存编译目录
               uses: actions/cache@v5
@@ -89,10 +83,10 @@ jobs:
                       /workdir/openwrt/build_dir/toolchain-*
                       /workdir/openwrt/staging_dir/host
                       /workdir/openwrt/staging_dir/toolchain-*
-                  key: ${{ runner.os }}-openwrt-K3-${{ matrix.variant }}-${{ env.REPO_COMMIT }}-${{ hashFiles('K3-LEDE/.config') }}
+                  key: ${{ runner.os }}-immortalwrt-K3-${{ matrix.variant }}-${{ env.REPO_BRANCH }}-${{ hashFiles('K3-LEDE/.config') }}
                   restore-keys: |
-                      ${{ runner.os }}-openwrt-K3-${{ matrix.variant }}-${{ env.REPO_COMMIT }}-
-                      ${{ runner.os }}-openwrt-K3-${{ env.REPO_COMMIT }}-
+                      ${{ runner.os }}-immortalwrt-K3-${{ matrix.variant }}-${{ env.REPO_BRANCH }}-
+                      ${{ runner.os }}-immortalwrt-K3-${{ env.REPO_BRANCH }}-
 
             - name: 🛠️ 准备脚本和配置
               run: |
@@ -166,7 +160,7 @@ jobs:
                   path: release_artifacts/*
 
     release:
-        name: 🚀 发布 K3 OpenWrt 固件
+        name: 🚀 发布 K3 ImmortalWrt 固件
         runs-on: ubuntu-latest
         needs: build
 
@@ -181,23 +175,23 @@ jobs:
               run: |
                   echo "release_date=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
 
-            - name: 🚀 发布 OpenWrt 固件
+            - name: 🚀 发布 ImmortalWrt 固件
               uses: ncipollo/release-action@v1
               with:
-                  tag: OpenWrt_K3_${{ env.release_date }}
+                  tag: ImmortalWrt_K3_${{ env.release_date }}
                   artifacts: release_artifacts/*
                   allowUpdates: true
                   token: ${{ secrets.GITHUB_TOKEN }}
                   body: |
-                      基于 Lean OpenWrt 构建
+                      基于 ImmortalWrt 24.10 构建
                       设备: 斐讯 K3
-                      源码固定: coolsnowwolf/lede 79cd677，bcm53xx 使用 5.4 内核
+                      源码: immortalwrt/immortalwrt openwrt-24.10，bcm53xx 使用 6.6 内核
                       默认管理地址: 10.10.10.1
                       默认账户: root
                       默认密码: password
 
                       本次 K3 同时发布两个无线固件版本：
-                      1. k3-lede-wifi-*：使用 LEDE 源码自带 k3wifi 固件，包含 iwconfig 开机设置 wlan0/wlan1 为 20 dBm。
+                      1. k3-imm-wifi-*：使用 ImmortalWrt 源码自带 K3 WiFi 固件，包含 iwconfig 开机设置 wlan0/wlan1 为 20 dBm。
                       2. k3-factory-wifi-noset-*：使用 K3 原厂 WiFi 固件 brcmfmac4366c-pcie.bin.k3，效果较好，但不能设置 WiFi 密码，且不包含 iwconfig 开机功率脚本。
 
             - name: 🗑️ 清理旧版本发布
@@ -211,7 +205,7 @@ jobs:
                       const keepLatest = Number(process.env.KEEP_LATEST || 10);
                       const deleteTags = String(process.env.DELETE_TAGS || "true").toLowerCase() === "true";
                       const { owner, repo } = context.repo;
-                      const prefix = "OpenWrt_K3_";
+                      const prefix = "ImmortalWrt_K3_";
                       const releases = await github.paginate(
                         github.rest.repos.listReleases,
                         { owner, repo, per_page: 100 }

@@ -11,17 +11,20 @@ git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-package
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/passwall-luci
 
 # Add packages
+mkdir -p package/lean
 git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora package/luci-theme-aurora
 git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/luci-app-aurora-config
 
-# K3 屏幕插件和驱动：参考 rmoyulong/Lite_OpenWrt 的 lede_k3.sh。
+# K3 屏幕插件和驱动：参考 rmoyulong/Lite_OpenWrt 的 immortalwrt_k3.sh。
 rm -rf package/lean/luci-app-k3screenctrl package/lean/k3screenctrl
 git clone --depth=1 https://github.com/li1507/luci-app-k3screenctrl.git package/lean/luci-app-k3screenctrl
 git clone --depth=1 https://github.com/li1507/k3screenctrl_build.git package/lean/k3screenctrl
 
 # 可选 K3 原厂 WiFi 固件：效果较好，但该固件不能设置 WiFi 密码。
 if [ "$K3_FACTORY_WIFI" = "true" ]; then
-  if [ -d "package/lean/k3-firmware/files" ]; then
+  if [ -d "package/firmware/brcmfmac4366c0-firmware-k3/files" ]; then
+    k3_firmware_file="package/firmware/brcmfmac4366c0-firmware-k3/files/brcmfmac4366c-pcie.bin"
+  elif [ -d "package/lean/k3-firmware/files" ]; then
     k3_firmware_file="package/lean/k3-firmware/files/brcmfmac4366c-pcie.bin"
   elif [ -d "package/lean/k3-brcmfmac4366c-firmware/files/lib/firmware/brcm" ]; then
     k3_firmware_file="package/lean/k3-brcmfmac4366c-firmware/files/lib/firmware/brcm/brcmfmac4366c-pcie.bin"
