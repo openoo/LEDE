@@ -19,58 +19,6 @@ git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/lu
 rm -rf package/lean/luci-app-k3screenctrl package/lean/k3screenctrl
 git clone --depth=1 https://github.com/li1507/luci-app-k3screenctrl.git package/lean/luci-app-k3screenctrl
 git clone --depth=1 https://github.com/li1507/k3screenctrl_build.git package/lean/k3screenctrl
-# 禁用屏幕自动休眠。当前 K3 屏幕程序在 ImmortalWrt 24.10 下休眠后可能无法唤醒。
-sed -i "s/option screen_time '30'/option screen_time '0'/g" package/lean/k3screenctrl/files/k3screenctrl
-sed -i 's/\[ $m -lt 10 \] && m=10/[ "$m" != "0" ] \&\& [ "$m" -lt 10 ] \&\& m=10/g' package/lean/k3screenctrl/files/k3screenctrl.init
-mkdir -p package/lean/k3screenctrl/patches
-printf '%s\n' \
-  '--- a/lib/k3screenctrl/port.sh' \
-  '+++ b/lib/k3screenctrl/port.sh' \
-  '@@ -2,9 +2,40 @@' \
-  ' ' \
-  ' print_eth_port_status() {' \
-  '     local port=$1' \
-  '+    local ifname' \
-  ' ' \
-  '-    # One `swconfig dev switch0 show` wastes more time than 4 `port show`' \
-  '-    if [ -n "`swconfig dev switch0 port $port show | grep \"link:up\"`" ]; then' \
-  '+    if command -v swconfig >/dev/null 2>&1 && swconfig dev switch0 show >/dev/null 2>&1; then' \
-  '+        # One `swconfig dev switch0 show` wastes more time than 4 `port show`' \
-  '+        if [ -n "`swconfig dev switch0 port $port show | grep \"link:up\"`" ]; then' \
-  '+            echo 1' \
-  '+        else' \
-  '+            echo 0' \
-  '+        fi' \
-  '+        return' \
-  '+    fi' \
-  '+' \
-  '+    # ImmortalWrt 24.10 uses DSA on K3. Physical ports are exposed as' \
-  '+    # lan1/lan2/lan3/wan instead of legacy switch0 ports.' \
-  '+    case "$port" in' \
-  '+        1)' \
-  '+            ifname="lan1"' \
-  '+            ;;' \
-  '+        0)' \
-  '+            ifname="lan2"' \
-  '+            ;;' \
-  '+        2)' \
-  '+            ifname="lan3"' \
-  '+            ;;' \
-  '+        3)' \
-  '+            ifname="wan"' \
-  '+            ;;' \
-  '+        *)' \
-  '+            ifname=""' \
-  '+            ;;' \
-  '+    esac' \
-  '+' \
-  '+    if [ -n "$ifname" ] && [ -r "/sys/class/net/$ifname/carrier" ] && \' \
-  '+        [ "$(cat /sys/class/net/$ifname/carrier 2>/dev/null)" = "1" ]; then' \
-  '         echo 1' \
-  '     else' \
-  '         echo 0' \
-  '     fi' \
-  ' }' > package/lean/k3screenctrl/patches/010-support-dsa-port-status.patch
 
 # 可选 K3 原厂 WiFi 固件：效果较好，但该固件不能设置 WiFi 密码。
 if [ "$K3_FACTORY_WIFI" = "true" ]; then
