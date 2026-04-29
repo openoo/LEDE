@@ -18,9 +18,6 @@ git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/lu
 # Default IP
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 
-# usbmuxd开机启动->ios设备通信
-sed -i '/exit 0/i usbmuxd' package/base-files/files/etc/rc.local
-
 #修改默认时间格式
 autocore_index_files=$(find ./package/*/autocore/files/ -type f -name "index.htm" 2>/dev/null)
 if [ -n "$autocore_index_files" ]; then
