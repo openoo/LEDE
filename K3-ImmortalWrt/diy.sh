@@ -19,6 +19,9 @@ git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/lu
 rm -rf package/lean/luci-app-k3screenctrl package/lean/k3screenctrl
 git clone --depth=1 https://github.com/li1507/luci-app-k3screenctrl.git package/lean/luci-app-k3screenctrl
 git clone --depth=1 https://github.com/li1507/k3screenctrl_build.git package/lean/k3screenctrl
+# 禁用屏幕自动休眠。当前 K3 屏幕程序在 ImmortalWrt 24.10 下休眠后可能无法唤醒。
+sed -i "s/option screen_time '30'/option screen_time '0'/g" package/lean/k3screenctrl/files/k3screenctrl
+sed -i 's/\[ $m -lt 10 \] && m=10/[ "$m" != "0" ] \&\& [ "$m" -lt 10 ] \&\& m=10/g' package/lean/k3screenctrl/files/k3screenctrl.init
 mkdir -p package/lean/k3screenctrl/patches
 printf '%s\n' \
   '--- a/lib/k3screenctrl/port.sh' \
