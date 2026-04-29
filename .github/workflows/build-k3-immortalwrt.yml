@@ -10,9 +10,9 @@ permissions:
 env:
     REPO_URL: https://github.com/immortalwrt/immortalwrt
     REPO_BRANCH: openwrt-24.10
-    CONFIG_FILE: K3-LEDE/.config
-    DIY_SH: K3-LEDE/diy.sh
-    FILES: K3-LEDE/files
+    CONFIG_FILE: K3-ImmortalWrt/.config
+    DIY_SH: K3-ImmortalWrt/diy.sh
+    FILES: K3-ImmortalWrt/files
     TZ: Asia/Shanghai
 
 jobs:
@@ -83,7 +83,7 @@ jobs:
                       /workdir/openwrt/build_dir/toolchain-*
                       /workdir/openwrt/staging_dir/host
                       /workdir/openwrt/staging_dir/toolchain-*
-                  key: ${{ runner.os }}-immortalwrt-K3-${{ matrix.variant }}-${{ env.REPO_BRANCH }}-${{ hashFiles('K3-LEDE/.config') }}
+                  key: ${{ runner.os }}-immortalwrt-K3-${{ matrix.variant }}-${{ env.REPO_BRANCH }}-${{ hashFiles('K3-ImmortalWrt/.config') }}
                   restore-keys: |
                       ${{ runner.os }}-immortalwrt-K3-${{ matrix.variant }}-${{ env.REPO_BRANCH }}-
                       ${{ runner.os }}-immortalwrt-K3-${{ env.REPO_BRANCH }}-

@@ -1,4 +1,4 @@
-# N1 / K3 OpenWrt
+# N1 LEDE / K3 ImmortalWrt
 
 斐讯 N1 和 K3 自用固件配置：N1 基于 [coolsnowwolf/lede](https://github.com/coolsnowwolf/lede)，K3 基于 [immortalwrt/immortalwrt](https://github.com/immortalwrt/immortalwrt) `openwrt-24.10`。
 
@@ -12,7 +12,7 @@
 - 默认密码：`password`
 - 构建方式：GitHub Actions 手动触发
 - N1 Workflow：[build-n1-openwrt.yml](.github/workflows/build-n1-openwrt.yml)
-- K3 Workflow：[build-k3-openwrt.yml](.github/workflows/build-k3-openwrt.yml)
+- K3 Workflow：[build-k3-immortalwrt.yml](.github/workflows/build-k3-immortalwrt.yml)
 
 ## 主要功能
 
@@ -81,12 +81,12 @@ ImmortalWrt 自带无线固件版预置 `iwconfig`，开机后将 `wlan0/wlan1` 
 - `N1-LEDE/.config`：N1 固件编译配置
 - `N1-LEDE/diy.sh`：自定义软件源、PassWall、主题和默认设置
 - `N1-LEDE/files`：预置到固件里的配置文件
-- `K3-LEDE/.config`：K3 固件编译配置
-- `K3-LEDE/diy.sh`：K3 自定义软件源、PassWall、主题和默认设置
-- `K3-LEDE/files`：K3 启动时追加 USB 共享网络接口的预置脚本
+- `K3-ImmortalWrt/.config`：K3 固件编译配置
+- `K3-ImmortalWrt/diy.sh`：K3 自定义软件源、PassWall、主题和默认设置
+- `K3-ImmortalWrt/files`：K3 启动时追加 USB 共享网络接口的预置脚本
 - `deps/ubuntu.txt`：GitHub Actions 编译依赖
 - `.github/workflows/build-n1-openwrt.yml`：N1 自动编译 workflow
-- `.github/workflows/build-k3-openwrt.yml`：K3 自动编译 workflow
+- `.github/workflows/build-k3-immortalwrt.yml`：K3 自动编译 workflow
 
 ## 截图
 
