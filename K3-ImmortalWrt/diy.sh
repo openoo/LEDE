@@ -10,10 +10,13 @@ rm -rf package/passwall-packages package/passwall-luci
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall-packages package/passwall-packages
 git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package/passwall-luci
 
+# 清除 feeds 中自带的 Argon，避免和 jerrykuku 的 master 版本冲突。
+rm -rf feeds/luci/themes/luci-theme-argon feeds/luci/applications/luci-app-argon-config
+
 # Add packages
 mkdir -p package/lean
-git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora package/luci-theme-aurora
-git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/luci-app-aurora-config
+git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 
 # K3 屏幕插件和驱动：参考 rmoyulong/Lite_OpenWrt 的 immortalwrt_k3.sh。
 rm -rf package/lean/luci-app-k3screenctrl package/lean/k3screenctrl
