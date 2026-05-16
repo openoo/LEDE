@@ -138,6 +138,12 @@ jobs:
                   CONFIG_PACKAGE_luci-app-argon-config=y
                   CONFIG_PACKAGE_qmodem=y
                   CONFIG_PACKAGE_luci-app-qmodem-next=y
+                  CONFIG_PACKAGE_luci-app-qmodem_INCLUDE_generic-qmi-wwan=y
+                  CONFIG_PACKAGE_kmod-usb-net-qmi-wwan=y
+                  CONFIG_PACKAGE_kmod-usb-net-cdc-mbim=y
+                  CONFIG_PACKAGE_uqmi=y
+                  CONFIG_PACKAGE_umbim=y
+                  CONFIG_PACKAGE_wwan=y
                   CONFIG_PACKAGE_luci-app-passwall=y
                   CONFIG_PACKAGE_luci-app-modemband=y
                   CONFIG_PACKAGE_modemband=y
@@ -198,6 +204,11 @@ jobs:
                     echo "::error::sms-tool was not patched to the expected obsy/sms_tool revision"
                     exit 1
                   }
+                  if grep -Eq 'CONFIG_PACKAGE_kmod-qmi_wwan_[qfs]=y' .config; then
+                    echo "::error::Vendor QMI drivers are enabled; use generic QMI/MBIM only to avoid NSS ECM rmnet symbol failures"
+                    grep -E 'CONFIG_PACKAGE_kmod-qmi_wwan_[qfs]=y' .config
+                    exit 1
+                  fi
                   make download -j8
                   find dl -size -1024c -exec ls -l {} \;
                   find dl -size -1024c -exec rm -f {} \;
