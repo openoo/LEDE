@@ -55,7 +55,7 @@ uci -q set wireless.radio1.country='US'
 uci -q set wireless.radio2.country='US'
 uci -q set wireless.radio1.disabled='0'
 uci -q set wireless.radio2.disabled='0'
-uci -q set firewall.@defaults[0].flow_offloading='0'
+uci -q set firewall.@defaults[0].flow_offloading='1'
 uci -q set system.@system[0].cronloglevel='7'
 uci commit wireless
 uci commit firewall
