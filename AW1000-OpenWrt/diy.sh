@@ -20,6 +20,7 @@ rm -rf package/custom-feeds
 mkdir -p package/custom-feeds
 git clone --depth=1 https://github.com/obsy/modemdata package/custom-feeds/obsy-modemdata
 git clone --depth=1 https://github.com/FUjr/QModem package/custom-feeds/qmodem
+sed -i 's/default PACKAGE_luci-app-qmodem_INCLUDE_vendor-qmi-wwan/default PACKAGE_luci-app-qmodem_INCLUDE_generic-qmi-wwan/' package/custom-feeds/qmodem/luci/luci-app-qmodem/Makefile
 git clone --depth=1 https://github.com/4IceG/luci-app-modemband package/custom-feeds/luci-app-modemband
 git clone --depth=1 https://github.com/4IceG/luci-app-atinout package/custom-feeds/luci-app-atinout
 git clone --depth=1 https://github.com/nooblk-98/luci-app-3ginfo-lite package/custom-feeds/luci-app-3ginfo-lite
@@ -44,9 +45,9 @@ fi
 # Default IP
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 
-# NSS 默认走 ECM/NSS 路径，关闭 firewall4 自带 flow offloading。
+# AW1000 默认无线区域和系统日志级别。
 mkdir -p files/etc/uci-defaults
-cat > files/etc/uci-defaults/99-aw1000-nss-defaults << 'EOF'
+cat > files/etc/uci-defaults/99-aw1000-defaults << 'EOF'
 #!/bin/sh
 
 uci -q set wireless.radio0.country='US'
@@ -54,14 +55,10 @@ uci -q set wireless.radio1.country='US'
 uci -q set wireless.radio2.country='US'
 uci -q set wireless.radio1.disabled='0'
 uci -q set wireless.radio2.disabled='0'
-uci -q set pbuf.opt.memory_profile='auto'
 uci -q set firewall.@defaults[0].flow_offloading='0'
-uci -q set ecm.@general[0].enable_bridge_filtering='0'
 uci -q set system.@system[0].cronloglevel='7'
 uci commit wireless
-uci commit pbuf
 uci commit firewall
-uci commit ecm
 uci commit system
 
 exit 0
