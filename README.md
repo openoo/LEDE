@@ -37,8 +37,8 @@ AW1000：
 - 目标平台：`qualcommax/ipq807x`
 - 设备：`arcadyan_aw1000`
 - NSS/WiFi：启用 QCA NSS、ECM、ath11k NSS WiFi
-- AW1000 额外软件源：[nooblk-98/noobwrt-custom-feeds](https://github.com/nooblk-98/noobwrt-custom-feeds)
-- QModem：由 noobwrt feed 提供，来源同步自 [FUjr/QModem](https://github.com/FUjr/QModem)
+- AW1000 额外插件：不再使用整包 noobwrt feed，改为按需拉取独立仓库
+- QModem：直接使用 [FUjr/QModem](https://github.com/FUjr/QModem)
 
 ## N1 diy.sh
 
@@ -87,8 +87,9 @@ AW1000：
 - 引入新版 PassWall：
   - [Openwrt-Passwall/openwrt-passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)
   - [Openwrt-Passwall/openwrt-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)
-- 通过 [nooblk-98/noobwrt-custom-feeds](https://github.com/nooblk-98/noobwrt-custom-feeds) 引入 Argon、AW1000 LED、QModem、netstat、3ginfo-lite、sms-tool-js、modemdata 等 AW1000 常用包
-- 单独补入 [4IceG/luci-app-modemband](https://github.com/4IceG/luci-app-modemband)，该仓库同时包含 `luci-app-modemband` 和 `modemband` 后端
+- 单独引入 AW1000 LED、QModem、3ginfo-lite、sms-tool-js、modemband、modemdata、atinout、Bandix、autocore、Arwi Dashboard、Ramfree 和 OpenAppFilter 等仓库
+- `sms-tool` 使用 OpenWrt packages feed 中的标准包；`4IceG/luci-app-sms-tool-js`、`4IceG/luci-app-modemband` 都依赖这个包，来源对应 [obsy/sms_tool](https://github.com/obsy/sms_tool)
+- `luci-app-bandix` 依赖 `bandix` 后端，因此同步引入 [timsaya/openwrt-bandix](https://github.com/timsaya/openwrt-bandix)
 - QModem 优先，不默认启用 ModemManager 和依赖 ModemManager 的 `luci-app-sms-manager`，避免抢占模组端口
 - 修改默认管理地址为 `10.10.10.1`
 - 保留 USB 共享网络默认配置

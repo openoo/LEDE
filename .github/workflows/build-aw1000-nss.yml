@@ -91,7 +91,6 @@ jobs:
             - name: 🔄 更新 feeds
               working-directory: ./openwrt
               run: |
-                  echo 'src-git noobwrt https://github.com/nooblk-98/noobwrt-custom-feeds.git;main' >> feeds.conf.default
                   ./scripts/feeds update -a
 
             - name: ⚙️ 加载自定义配置
@@ -111,20 +110,6 @@ jobs:
               working-directory: ./openwrt
               run: |
                   ./scripts/feeds install -a
-                  ./scripts/feeds install \
-                    luci-theme-argon \
-                    luci-app-argon-config \
-                    luci-app-aw1k-led \
-                    luci-app-netstat \
-                    luci-app-3ginfo-lite \
-                    luci-app-sms-tool-js \
-                    luci-app-modemdata \
-                    modemdata \
-                    qmodem \
-                    sms-forwarder-next \
-                    luci-app-qmodem-next \
-                    luci-app-qmodem-monitor \
-                    luci-app-qmodem-ttlfw4
 
             - name: 🧽 清理旧源码缓存
               working-directory: ./openwrt
@@ -149,9 +134,26 @@ jobs:
                   CONFIG_PACKAGE_kmod-qca-nss-drv-wifi-meshmgr=y
                   CONFIG_PACKAGE_kmod-qca-nss-ecm=y
                   CONFIG_PACKAGE_luci-app-aw1k-led=y
+                  CONFIG_PACKAGE_luci-theme-argon=y
+                  CONFIG_PACKAGE_luci-app-argon-config=y
                   CONFIG_PACKAGE_qmodem=y
                   CONFIG_PACKAGE_luci-app-qmodem-next=y
                   CONFIG_PACKAGE_luci-app-passwall=y
+                  CONFIG_PACKAGE_luci-app-modemband=y
+                  CONFIG_PACKAGE_modemband=y
+                  CONFIG_PACKAGE_luci-app-atinout=y
+                  CONFIG_PACKAGE_atinout=y
+                  CONFIG_PACKAGE_luci-app-modemdata=y
+                  CONFIG_PACKAGE_modemdata=y
+                  CONFIG_PACKAGE_sms-tool=y
+                  CONFIG_PACKAGE_luci-app-sms-tool-js=y
+                  CONFIG_PACKAGE_luci-app-bandix=y
+                  CONFIG_PACKAGE_bandix=y
+                  CONFIG_PACKAGE_luci-app-arwi-dashboard=y
+                  CONFIG_PACKAGE_luci-app-ramfree=y
+                  CONFIG_PACKAGE_luci-app-oaf=y
+                  CONFIG_PACKAGE_appfilter=y
+                  CONFIG_PACKAGE_kmod-oaf=y
                   "
                   for config in $required_configs; do
                     grep -qxF "$config" .config || {
@@ -162,10 +164,29 @@ jobs:
                   required_paths="
                   package/feeds/nss_packages/qca-nss-drv/Makefile
                   package/feeds/nss_packages/qca-nss-clients/Makefile
-                  package/feeds/noobwrt/luci-app-aw1k-led/Makefile
-                  package/feeds/noobwrt/qmodem/Makefile
+                  package/custom-feeds/luci-app-aw1k-led/Makefile
+                  package/luci-theme-argon/Makefile
+                  package/luci-app-argon-config/Makefile
+                  package/custom-feeds/qmodem/application/qmodem/Makefile
+                  package/custom-feeds/qmodem/luci/luci-app-qmodem-next/Makefile
                   package/passwall-luci/luci-app-passwall/Makefile
-                  package/modemband-packages/luci-app-modemband/Makefile
+                  package/custom-feeds/luci-app-modemband/luci-app-modemband/Makefile
+                  package/custom-feeds/luci-app-modemband/modemband/modemband/Makefile
+                  package/custom-feeds/luci-app-atinout/luci-app-atinout/Makefile
+                  package/custom-feeds/luci-app-atinout/atinout/Makefile
+                  package/custom-feeds/luci-app-3ginfo-lite/luci-app-3ginfo-lite/Makefile
+                  package/custom-feeds/luci-app-sms-tool-js/luci-app-sms-tool-js/Makefile
+                  package/feeds/packages/sms-tool/Makefile
+                  package/custom-feeds/obsy-modemdata/modemdata/Makefile
+                  package/custom-feeds/luci-app-modemdata/luci-app-modemdata/Makefile
+                  package/custom-feeds/luci-app-bandix/luci-app-bandix/Makefile
+                  package/custom-feeds/openwrt-bandix/openwrt-bandix/Makefile
+                  package/custom-feeds/autocore-arm/Makefile
+                  package/custom-feeds/luci-app-arwi-dashboard/Makefile
+                  package/custom-feeds/luci-app-ramfree/Makefile
+                  package/custom-feeds/OpenAppFilter/luci-app-oaf/Makefile
+                  package/custom-feeds/OpenAppFilter/oaf/Makefile
+                  package/custom-feeds/OpenAppFilter/open-app-filter/Makefile
                   "
                   for path in $required_paths; do
                     test -e "$path" || {
@@ -231,7 +252,7 @@ jobs:
                       默认管理地址: 10.10.10.1
                       默认账户: root
                       默认密码: password
-                      说明: 保留 USB 共享网络，通过 noobwrt-custom-feeds 加入 QModem / AW1000 LED / modem 工具，并启用 NSS / ECM / ath11k NSS WiFi。
+                      说明: 保留 USB 共享网络，通过独立插件仓库加入 QModem / AW1000 LED / modem 工具，并启用 NSS / ECM / ath11k NSS WiFi。
 
             - name: 🗑️ 清理旧版本发布
               uses: actions/github-script@v8

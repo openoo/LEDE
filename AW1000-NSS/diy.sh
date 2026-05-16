@@ -12,10 +12,26 @@ git clone --depth=1 https://github.com/Openwrt-Passwall/openwrt-passwall package
 
 # 清除 feeds 中自带的 Argon，避免和 jerrykuku 的 master 版本冲突。
 rm -rf feeds/luci/themes/luci-theme-argon feeds/luci/applications/luci-app-argon-config
+git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
+git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 
-# noobwrt-custom-feeds already provides Argon, AW1000 LED, QModem,
-# modemdata, netstat, 3ginfo-lite and sms-tool-js. Only modemband is added here.
-git clone --depth=1 https://github.com/4IceG/luci-app-modemband package/modemband-packages
+# 独立引入需要的蜂窝网络、状态页和管理插件，不再使用 noobwrt-custom-feeds。
+rm -rf package/custom-feeds
+mkdir -p package/custom-feeds
+git clone --depth=1 https://github.com/obsy/modemdata package/custom-feeds/obsy-modemdata
+git clone --depth=1 https://github.com/FUjr/QModem package/custom-feeds/qmodem
+git clone --depth=1 https://github.com/4IceG/luci-app-modemband package/custom-feeds/luci-app-modemband
+git clone --depth=1 https://github.com/4IceG/luci-app-atinout package/custom-feeds/luci-app-atinout
+git clone --depth=1 https://github.com/nooblk-98/luci-app-3ginfo-lite package/custom-feeds/luci-app-3ginfo-lite
+git clone --depth=1 https://github.com/nooblk-98/luci-app-aw1k-led package/custom-feeds/luci-app-aw1k-led
+git clone --depth=1 https://github.com/4IceG/luci-app-sms-tool-js package/custom-feeds/luci-app-sms-tool-js
+git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/custom-feeds/openwrt-bandix
+git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/custom-feeds/luci-app-bandix
+git clone --depth=1 https://github.com/sbwml/autocore-arm package/custom-feeds/autocore-arm
+git clone --depth=1 https://github.com/derisamedia/luci-app-arwi-dashboard package/custom-feeds/luci-app-arwi-dashboard
+git clone --depth=1 https://github.com/sbwml/luci-app-ramfree.git package/custom-feeds/luci-app-ramfree
+git clone --depth=1 https://github.com/4IceG/luci-app-modemdata package/custom-feeds/luci-app-modemdata
+git clone --depth=1 https://github.com/destan19/OpenAppFilter package/custom-feeds/OpenAppFilter
 
 # Default IP
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
