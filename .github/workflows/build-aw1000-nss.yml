@@ -194,6 +194,10 @@ jobs:
                       exit 1
                     }
                   done
+                  grep -qxF 'PKG_SOURCE_VERSION:=94899dc987d3a63bd04f8b8e25f6296381d76790' feeds/packages/utils/sms-tool/Makefile || {
+                    echo "::error::sms-tool was not patched to the expected obsy/sms_tool revision"
+                    exit 1
+                  }
                   make download -j8
                   find dl -size -1024c -exec ls -l {} \;
                   find dl -size -1024c -exec rm -f {} \;

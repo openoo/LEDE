@@ -33,6 +33,14 @@ git clone --depth=1 https://github.com/sbwml/luci-app-ramfree.git package/custom
 git clone --depth=1 https://github.com/4IceG/luci-app-modemdata package/custom-feeds/luci-app-modemdata
 git clone --depth=1 https://github.com/destan19/OpenAppFilter package/custom-feeds/OpenAppFilter
 
+# 使用 OpenWrt 标准 sms-tool 包，但跟进 obsy/sms_tool 的最新源码。
+sms_tool_makefile="feeds/packages/utils/sms-tool/Makefile"
+if [ -f "$sms_tool_makefile" ]; then
+  sed -i 's/^PKG_SOURCE_DATE:=.*/PKG_SOURCE_DATE:=2026-05-16/' "$sms_tool_makefile"
+  sed -i 's/^PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=94899dc987d3a63bd04f8b8e25f6296381d76790/' "$sms_tool_makefile"
+  sed -i 's/^PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/' "$sms_tool_makefile"
+fi
+
 # Default IP
 sed -i 's/192.168.1.1/10.10.10.1/g' package/base-files/files/bin/config_generate
 

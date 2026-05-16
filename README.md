@@ -88,7 +88,7 @@ AW1000：
   - [Openwrt-Passwall/openwrt-passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)
   - [Openwrt-Passwall/openwrt-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)
 - 单独引入 AW1000 LED、QModem、3ginfo-lite、sms-tool-js、modemband、modemdata、atinout、Bandix、autocore、Arwi Dashboard、Ramfree 和 OpenAppFilter 等仓库
-- `sms-tool` 使用 OpenWrt packages feed 中的标准包；`4IceG/luci-app-sms-tool-js`、`4IceG/luci-app-modemband` 都依赖这个包，来源对应 [obsy/sms_tool](https://github.com/obsy/sms_tool)
+- `sms-tool` 使用 OpenWrt packages feed 中的标准包，并在 `diy.sh` 中固定到 [obsy/sms_tool](https://github.com/obsy/sms_tool) 的 `94899dc`；`4IceG/luci-app-sms-tool-js`、`4IceG/luci-app-modemband` 都依赖这个包
 - `luci-app-bandix` 依赖 `bandix` 后端，因此同步引入 [timsaya/openwrt-bandix](https://github.com/timsaya/openwrt-bandix)
 - QModem 优先，不默认启用 ModemManager 和依赖 ModemManager 的 `luci-app-sms-manager`，避免抢占模组端口
 - 修改默认管理地址为 `10.10.10.1`
