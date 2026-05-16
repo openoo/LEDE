@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# 保留仓库现有 USB 共享网络习惯：usb0 自动作为 WAN 上游。
+uci -q set network.lan.ipaddr='10.10.10.1'
+uci -q set network.lan.netmask='255.255.255.0'
+
+if ! uci -q get network.usbv4 >/dev/null; then
+	uci set network.usbv4='interface'
+fi
+uci set network.usbv4.proto='dhcp'
+uci set network.usbv4.device='usb0'
+uci set network.usbv4.ifname='usb0'
+
+if ! uci -q get network.usbv6 >/dev/null; then
+	uci set network.usbv6='interface'
+fi
+uci set network.usbv6.proto='dhcpv6'
+uci set network.usbv6.device='usb0'
+uci set network.usbv6.ifname='usb0'
+uci set network.usbv6.reqaddress='try'
+uci set network.usbv6.reqprefix='auto'
+
+wan_zone="$(uci show firewall | sed -n "s/^firewall\.\([^=]*\)\.name='wan'$/\1/p" | head -n1)"
+if [ -n "$wan_zone" ]; then
+	current_networks="$(uci -q get firewall.${wan_zone}.network)"
+	case " $current_networks " in
+		*" usbv4 "*) ;;
+		*) uci add_list firewall.${wan_zone}.network='usbv4' ;;
+	esac
+	case " $current_networks " in
+		*" usbv6 "*) ;;
+		*) uci add_list firewall.${wan_zone}.network='usbv6' ;;
+	esac
+fi
+
+uci commit network
+uci commit firewall
+
+exit 0

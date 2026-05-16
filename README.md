@@ -1,6 +1,6 @@
-# N1 LEDE / K3 ImmortalWrt
+# N1 LEDE / K3 ImmortalWrt / AW1000 NSS
 
-斐讯 N1 和斐讯 K3 的自用 OpenWrt 构建配置。N1 保留 LEDE 线，K3 已切换到 ImmortalWrt 24.10 线。
+斐讯 N1、斐讯 K3 和 Arcadyan AW1000 的自用 OpenWrt 构建配置。N1 保留 LEDE 线，K3 已切换到 ImmortalWrt 24.10 线，AW1000 使用 AgustinLorenzo main_nss 线。
 
 ## 基本信息
 
@@ -9,6 +9,7 @@
 - 默认密码：`password`
 - N1 Workflow：[build-n1-openwrt.yml](.github/workflows/build-n1-openwrt.yml)
 - K3 Workflow：[build-k3-immortalwrt.yml](.github/workflows/build-k3-immortalwrt.yml)
+- AW1000 Workflow：[build-aw1000-nss.yml](.github/workflows/build-aw1000-nss.yml)
 
 ## 源码和内核
 
@@ -29,6 +30,15 @@ K3：
 - 内核版本：ImmortalWrt 24.10 bcm53xx 默认 6.6 系列
 - K3 WiFi 普通版使用 ImmortalWrt 自带 `brcmfmac-firmware-4366c0-pcie-k3`
 - K3 原厂 WiFi 版使用 [yangxu52/Phicomm-k3-Wireless-Firmware](https://github.com/yangxu52/Phicomm-k3-Wireless-Firmware) 的 `brcmfmac4366c-pcie.bin.k3`
+
+AW1000：
+
+- OpenWrt 源码：[AgustinLorenzo/openwrt](https://github.com/AgustinLorenzo/openwrt) `main_nss`
+- 目标平台：`qualcommax/ipq807x`
+- 设备：`arcadyan_aw1000`
+- NSS/WiFi：启用 QCA NSS、ECM、ath11k NSS WiFi
+- AW1000 额外软件源：[nooblk-98/noobwrt-custom-feeds](https://github.com/nooblk-98/noobwrt-custom-feeds)
+- QModem：由 noobwrt feed 提供，来源同步自 [FUjr/QModem](https://github.com/FUjr/QModem)
 
 ## N1 diy.sh
 
@@ -68,6 +78,23 @@ K3：
 - 在 `rc.local` 中启动 `usbmuxd`，用于 iOS USB 共享网络相关通信
 - 调整 autocore 首页时间显示格式
 
+## AW1000 diy.sh
+
+[AW1000-NSS/diy.sh](AW1000-NSS/diy.sh) 在 AgustinLorenzo main_nss 源码拉取后执行，主要做这些事：
+
+- 替换 Go 工具链为 [sbwml/packages_lang_golang](https://github.com/sbwml/packages_lang_golang) `26.x`
+- 移除 feeds 中容易和新版 PassWall 冲突的旧核心包
+- 引入新版 PassWall：
+  - [Openwrt-Passwall/openwrt-passwall-packages](https://github.com/Openwrt-Passwall/openwrt-passwall-packages)
+  - [Openwrt-Passwall/openwrt-passwall](https://github.com/Openwrt-Passwall/openwrt-passwall)
+- 通过 [nooblk-98/noobwrt-custom-feeds](https://github.com/nooblk-98/noobwrt-custom-feeds) 引入 Argon、AW1000 LED、QModem、netstat、3ginfo-lite、sms-tool-js、modemdata 等 AW1000 常用包
+- 单独补入 [4IceG/luci-app-modemband](https://github.com/4IceG/luci-app-modemband)，该仓库同时包含 `luci-app-modemband` 和 `modemband` 后端
+- QModem 优先，不默认启用 ModemManager 和依赖 ModemManager 的 `luci-app-sms-manager`，避免抢占模组端口
+- 修改默认管理地址为 `10.10.10.1`
+- 保留 USB 共享网络默认配置
+- 写入 AW1000 NSS 默认设置，关闭 firewall4 flow offloading，优先走 ECM/NSS
+- 调整 autocore 首页时间显示格式
+
 ## K3 双 WiFi 固件
 
 K3 workflow 会同时构建两个固件：
@@ -90,6 +117,10 @@ K3 workflow 会同时构建两个固件：
 - [K3-ImmortalWrt/.config](K3-ImmortalWrt/.config)：K3 编译配置
 - [K3-ImmortalWrt/diy.sh](K3-ImmortalWrt/diy.sh)：K3 自定义脚本
 - [K3-ImmortalWrt/files](K3-ImmortalWrt/files)：K3 预置文件
+- [AW1000-NSS/.config](AW1000-NSS/.config)：AW1000 NSS 编译配置
+- [AW1000-NSS/diy.sh](AW1000-NSS/diy.sh)：AW1000 自定义脚本
+- [AW1000-NSS/files](AW1000-NSS/files)：AW1000 预置文件
 - [deps/ubuntu.txt](deps/ubuntu.txt)：GitHub Actions 编译依赖
 - [.github/workflows/build-n1-openwrt.yml](.github/workflows/build-n1-openwrt.yml)：N1 自动编译 workflow
 - [.github/workflows/build-k3-immortalwrt.yml](.github/workflows/build-k3-immortalwrt.yml)：K3 自动编译 workflow
+- [.github/workflows/build-aw1000-nss.yml](.github/workflows/build-aw1000-nss.yml)：AW1000 NSS 自动编译 workflow
