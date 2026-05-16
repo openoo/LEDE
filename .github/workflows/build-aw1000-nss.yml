@@ -91,6 +91,7 @@ jobs:
             - name: 🔄 更新 feeds
               working-directory: ./openwrt
               run: |
+                  echo 'src-git nss_packages https://github.com/qosmio/nss-packages.git;NSS-12.5-K6.x' >> feeds.conf.default
                   echo 'src-git noobwrt https://github.com/nooblk-98/noobwrt-custom-feeds.git;main' >> feeds.conf.default
                   ./scripts/feeds update -a
 
@@ -110,6 +111,7 @@ jobs:
             - name: 📚 安装 feeds
               working-directory: ./openwrt
               run: |
+                  ./scripts/feeds install -a -p nss_packages
                   ./scripts/feeds install -a -p packages
                   ./scripts/feeds install -a -p luci
                   ./scripts/feeds install -a -p routing || true
