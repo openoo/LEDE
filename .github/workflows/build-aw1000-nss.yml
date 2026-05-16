@@ -135,7 +135,44 @@ jobs:
             - name: 📦 下载源码包
               working-directory: ./openwrt
               run: |
-                  make defconfig
+                  make defconfig 2>&1 | tee /tmp/aw1000-defconfig.log
+                  if grep -q "dependency on 'kmod-qca-nss-drv'.*does not exist" /tmp/aw1000-defconfig.log; then
+                    echo "::error::NSS feed was not installed correctly: kmod-qca-nss-drv is missing"
+                    exit 1
+                  fi
+                  required_configs="
+                  CONFIG_TARGET_qualcommax_ipq807x_DEVICE_arcadyan_aw1000=y
+                  CONFIG_PACKAGE_kmod-ath11k=y
+                  CONFIG_ATH11K_NSS_SUPPORT=y
+                  CONFIG_PACKAGE_MAC80211_NSS_SUPPORT=y
+                  CONFIG_PACKAGE_kmod-qca-nss-drv=y
+                  CONFIG_PACKAGE_kmod-qca-nss-drv-wifi-meshmgr=y
+                  CONFIG_PACKAGE_kmod-qca-nss-ecm=y
+                  CONFIG_PACKAGE_luci-app-aw1k-led=y
+                  CONFIG_PACKAGE_qmodem=y
+                  CONFIG_PACKAGE_luci-app-qmodem-next=y
+                  CONFIG_PACKAGE_luci-app-passwall=y
+                  "
+                  for config in $required_configs; do
+                    grep -qxF "$config" .config || {
+                      echo "::error::Required config missing after defconfig: $config"
+                      exit 1
+                    }
+                  done
+                  required_paths="
+                  package/feeds/nss_packages/qca-nss-drv/Makefile
+                  package/feeds/nss_packages/qca-nss-clients/Makefile
+                  package/feeds/noobwrt/luci-app-aw1k-led/Makefile
+                  package/feeds/noobwrt/qmodem/Makefile
+                  package/passwall-luci/luci-app-passwall/Makefile
+                  package/modemband-packages/luci-app-modemband/Makefile
+                  "
+                  for path in $required_paths; do
+                    test -e "$path" || {
+                      echo "::error::Required package path missing: $path"
+                      exit 1
+                    }
+                  done
                   make download -j8
                   find dl -size -1024c -exec ls -l {} \;
                   find dl -size -1024c -exec rm -f {} \;
