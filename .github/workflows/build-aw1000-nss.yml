@@ -110,11 +110,7 @@ jobs:
             - name: 📚 安装 feeds
               working-directory: ./openwrt
               run: |
-                  ./scripts/feeds install -a -p nss_packages
-                  ./scripts/feeds install -a -p packages
-                  ./scripts/feeds install -a -p luci
-                  ./scripts/feeds install -a -p routing || true
-                  ./scripts/feeds install -a -p telephony || true
+                  ./scripts/feeds install -a
                   ./scripts/feeds install \
                     luci-theme-argon \
                     luci-app-argon-config \
