@@ -101,6 +101,12 @@ jobs:
                   cd openwrt
                   $GITHUB_WORKSPACE/$DIY_SH
 
+            - name: 🧷 固定 AW1000 NSS 内核配置
+              working-directory: ./openwrt
+              run: |
+                  grep -qxF '# CONFIG_NF_CONNTRACK_DSCPREMARK_EXT is not set' target/linux/qualcommax/ipq807x/config-default || \
+                    echo '# CONFIG_NF_CONNTRACK_DSCPREMARK_EXT is not set' >> target/linux/qualcommax/ipq807x/config-default
+
             - name: 📚 安装 feeds
               working-directory: ./openwrt
               run: |
