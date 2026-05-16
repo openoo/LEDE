@@ -18,8 +18,10 @@ coreutils
 cpio
 curl
 device-tree-compiler
+diffutils
 dos2unix
 fastjar
+findutils
 flex
 gawk
 gettext
@@ -29,6 +31,7 @@ git
 git-core
 gn
 gperf
+grep
 gzip
 haveged
 help2man
@@ -50,6 +53,7 @@ libssl-dev
 libtool
 libz-dev
 lrzsz
+make
 mkisofs
 msmtp
 nano
@@ -57,6 +61,7 @@ ninja-build
 p7zip
 p7zip-full
 patch
+perl
 pigz
 pkgconf
 python3
@@ -77,6 +82,7 @@ upx-ucl
 unzip
 vim
 wget
+which
 xmlto
 xsltproc
 xxd
