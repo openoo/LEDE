@@ -125,11 +125,6 @@ jobs:
                   find dl -size -1024c -exec ls -l {} \;
                   find dl -size -1024c -exec rm -f {} \;
 
-            - name: 🧪 预编译 NSS ECM
-              working-directory: ./openwrt
-              run: |
-                  make package/feeds/nss_packages/qca-nss-ecm/compile -j1 V=s
-
             - name: 🔨 编译固件
               id: compile
               run: |
