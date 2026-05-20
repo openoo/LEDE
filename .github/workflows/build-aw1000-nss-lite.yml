@@ -1,0 +1,240 @@
+name: 📦 编译 AW1000 NSS Lite OpenWrt
+
+on:
+    workflow_dispatch:
+
+permissions:
+    contents: write
+    actions: write
+
+env:
+    REPO_URL: https://github.com/qosmio/openwrt-ipq.git
+    REPO_BRANCH: 24.10-nss
+    NSS_PACKAGES_BRANCH: NSS-12.5-K6.x-wwan
+    CONFIG_FILE: AW1000-NSS/config-lite.seed
+    DIY_SH: AW1000-NSS/diy.sh
+    FILES: AW1000-NSS/files
+    TZ: Asia/Shanghai
+
+jobs:
+    build:
+        name: 🧱 构建 AW1000 NSS Lite 固件
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: 🧹 释放编译空间
+              uses: rmoyulong/maximize-build-space@master
+              with:
+                  root-reserve-mb: 2048
+                  swap-size-mb: 1024
+                  build-mount-path: /workdir
+                  overprovision-lvm: "true"
+                  remove-dotnet: "true"
+                  remove-android: "true"
+                  remove-haskell: "true"
+                  remove-codeql: "true"
+                  remove-docker-images: "true"
+
+            - name: 📊 检查磁盘空间
+              run: |
+                  echo "Free space:"
+                  df -h
+
+            - name: 📥 检出当前仓库
+              uses: actions/checkout@v6
+
+            - name: 🧰 安装编译依赖
+              env:
+                  DEBIAN_FRONTEND: noninteractive
+              run: |
+                  sudo -E apt-get -qq update --fix-missing
+                  sudo -E apt-get -qq full-upgrade -y
+                  sudo -E apt-get -qq install -y $(cat "$GITHUB_WORKSPACE/deps/ubuntu.txt")
+                  sudo -E apt-get -qq autoremove --purge -y
+                  sudo -E apt-get -qq clean
+                  sudo timedatectl set-timezone "$TZ"
+                  sudo mkdir -p /workdir
+                  sudo chown "$USER:$GROUPS" /workdir
+
+            - name: 🌱 克隆 OpenWrt 源码
+              working-directory: /workdir
+              run: |
+                  git clone --single-branch --depth=1 --branch="$REPO_BRANCH" "$REPO_URL" openwrt
+                  ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
+
+            - name: 🧬 提取 LLVM BPF 预编译工具链
+              working-directory: ./openwrt
+              run: |
+                  wget -nv https://downloads.openwrt.org/releases/24.10.6/targets/qualcommax/ipq807x/llvm-bpf-18.1.7.Linux-x86_64.tar.zst
+                  tar --zstd -xf llvm-bpf-18.1.7.Linux-x86_64.tar.zst
+
+            - name: 💾 缓存编译目录
+              uses: actions/cache@v5
+              with:
+                  path: |
+                      ~/.ccache
+                      /workdir/openwrt/dl
+                      /workdir/openwrt/build_dir/host
+                      /workdir/openwrt/build_dir/toolchain-*
+                      /workdir/openwrt/staging_dir/host
+                      /workdir/openwrt/staging_dir/toolchain-*
+                  key: ${{ runner.os }}-openwrt-AW1000-NSS-Lite-${{ env.REPO_BRANCH }}-${{ env.NSS_PACKAGES_BRANCH }}-${{ hashFiles('AW1000-NSS/config-lite.seed', 'AW1000-NSS/diy.sh', 'AW1000-NSS/files/**') }}
+                  restore-keys: |
+                      ${{ runner.os }}-openwrt-AW1000-NSS-Lite-${{ env.REPO_BRANCH }}-${{ env.NSS_PACKAGES_BRANCH }}-
+                      ${{ runner.os }}-openwrt-AW1000-NSS-Lite-${{ env.REPO_BRANCH }}-
+
+            - name: 🛠️ 准备脚本和配置
+              run: |
+                  [ -e "$CONFIG_FILE" ] && dos2unix "$CONFIG_FILE"
+                  [ -e "$DIY_SH" ] && dos2unix "$DIY_SH"
+                  find "$FILES" -type f -exec dos2unix {} \; || true
+                  chmod +x "$DIY_SH"
+
+            - name: 🔄 更新 feeds
+              working-directory: ./openwrt
+              run: |
+                  sed -i -E "s|(src-git nss_packages https://github.com/qosmio/nss-packages.git)(;[^[:space:]]+)?|\\1;${NSS_PACKAGES_BRANCH}|" feeds.conf.default
+                  grep -n "nss_packages.*${NSS_PACKAGES_BRANCH}" feeds.conf.default
+                  ./scripts/feeds update -a
+
+            - name: ⚙️ 加载 Lite 配置和自定义脚本
+              run: |
+                  [ -e "$FILES" ] && cp -a "$FILES" openwrt/files
+                  cp "$CONFIG_FILE" openwrt/.config
+                  cd openwrt
+                  "$GITHUB_WORKSPACE/$DIY_SH"
+
+            - name: 🧷 固定 AW1000 NSS 内核配置
+              working-directory: ./openwrt
+              run: |
+                  grep -Eq '^(CONFIG_NF_CONNTRACK_DSCPREMARK_EXT=y|# CONFIG_NF_CONNTRACK_DSCPREMARK_EXT is not set)$' target/linux/qualcommax/ipq807x/config-default || \
+                    echo '# CONFIG_NF_CONNTRACK_DSCPREMARK_EXT is not set' >> target/linux/qualcommax/ipq807x/config-default
+
+            - name: 📚 安装 feeds
+              working-directory: ./openwrt
+              run: |
+                  ./scripts/feeds install -a
+
+            - name: 🧽 清理旧源码缓存
+              working-directory: ./openwrt
+              run: |
+                  rm -rf dl/go-mod-cache
+                  rm -f dl/*tcping* dl/*shadowsocks-libev* dl/*shadowsocksr-libev* dl/*simple-obfs* dl/*trojan-plus* dl/*Xray-core* dl/*xray-core*
+
+            - name: 📦 下载源码包
+              working-directory: ./openwrt
+              run: |
+                  make defconfig
+                  ./scripts/diffconfig.sh > ../aw1000-nss-lite-diffconfig.txt
+                  make download -j8
+                  find dl -size -1024c -exec ls -l {} \;
+                  find dl -size -1024c -exec rm -f {} \;
+
+            - name: 🔨 编译固件
+              id: compile
+              run: |
+                  chmod -R 755 openwrt
+                  cd openwrt
+                  echo -e "$(nproc) thread compile"
+                  make -j$(nproc) || make -j1 V=s
+                  echo "compile_status=success" >> $GITHUB_ENV
+                  echo "status=success" >> $GITHUB_OUTPUT
+
+            - name: 🧾 输出失败日志
+              if: ${{ failure() }}
+              run: |
+                  if [ -d openwrt/logs ]; then
+                    find openwrt/logs -type f | sort
+                    find openwrt/logs -type f \( -path '*qca-nss-ecm*' -o -path '*qca-nss-drv*' -o -path '*OpenAppFilter*' -o -path '*oaf*' -o -path '*passwall*' \) -print -exec sh -c 'echo "===== $1 ====="; tail -n 240 "$1"' sh {} \;
+                  else
+                    echo "No openwrt/logs directory found"
+                  fi
+
+            - name: 📤 上传失败日志
+              if: ${{ failure() }}
+              uses: actions/upload-artifact@v4
+              with:
+                  name: aw1000-nss-lite-build-logs
+                  path: openwrt/logs/**
+                  if-no-files-found: ignore
+
+            - name: 🗂️ 整理发布产物
+              if: ${{ steps.compile.outputs.status == 'success' && !cancelled() }}
+              run: |
+                  test -d openwrt/bin/targets/qualcommax/ipq807x
+                  mkdir -p release_artifacts
+                  find openwrt/bin/targets/qualcommax/ipq807x -maxdepth 1 -type f -name '*arcadyan_aw1000*' -exec cp -a {} release_artifacts/ \;
+                  cp -a openwrt/bin/targets/qualcommax/ipq807x/sha256sums release_artifacts/ 2>/dev/null || true
+                  cp -a openwrt/.config release_artifacts/aw1000-nss-lite-full.config
+                  cp -a aw1000-nss-lite-diffconfig.txt release_artifacts/aw1000-nss-lite-diffconfig.txt
+
+            - name: 📤 上传 AW1000 Lite 固件产物
+              if: ${{ steps.compile.outputs.status == 'success' && !cancelled() }}
+              uses: actions/upload-artifact@v4
+              with:
+                  name: aw1000-nss-lite
+                  path: release_artifacts/*
+
+    release:
+        name: 🚀 发布 AW1000 NSS Lite 固件
+        runs-on: ubuntu-latest
+        needs: build
+
+        steps:
+            - name: 📥 下载 AW1000 Lite 固件产物
+              uses: actions/download-artifact@v4
+              with:
+                  path: release_artifacts
+                  merge-multiple: true
+
+            - name: 🗓️ 生成发布版本号
+              run: |
+                  echo "release_date=$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+
+            - name: 🚀 发布 AW1000 NSS Lite 固件
+              uses: ncipollo/release-action@v1
+              with:
+                  tag: OpenWrt_AW1000_NSS_Lite_${{ env.release_date }}
+                  artifacts: release_artifacts/*
+                  allowUpdates: true
+                  token: ${{ secrets.GITHUB_TOKEN }}
+                  body: |
+                      基于 qosmio/openwrt-ipq 的 24.10-nss 分支构建
+                      NSS 包分支: NSS-12.5-K6.x-wwan
+                      配置: AW1000-NSS/config-lite.seed
+                      设备: Arcadyan AW1000
+                      默认管理地址: 10.10.10.1
+                      默认账户: root
+                      默认密码: password
+                      说明: 基于 nss-setup/config-nss.seed 的 Lite 配置；保留 PassWall、diy.sh 自定义功能、QModem/WWAN、USB 共享网络和中文 LuCI，不内置 USB 存储/Samba 文件共享。
+
+            - name: 🗑️ 清理旧版本发布
+              uses: actions/github-script@v8
+              env:
+                  KEEP_LATEST: 10
+                  DELETE_TAGS: true
+              with:
+                  github-token: ${{ secrets.GITHUB_TOKEN }}
+                  script: |
+                      const keepLatest = Number(process.env.KEEP_LATEST || 10);
+                      const deleteTags = String(process.env.DELETE_TAGS || "true").toLowerCase() === "true";
+                      const { owner, repo } = context.repo;
+                      const prefix = "OpenWrt_AW1000_NSS_Lite_";
+                      const releases = await github.paginate(
+                        github.rest.repos.listReleases,
+                        { owner, repo, per_page: 100 }
+                      );
+                      const filtered = releases
+                        .filter((release) => release.tag_name && release.tag_name.startsWith(prefix))
+                        .sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                      const toDelete = filtered.slice(keepLatest);
+                      for (const release of toDelete) {
+                        await github.rest.repos.deleteRelease({ owner, repo, release_id: release.id });
+                        if (deleteTags && release.tag_name) {
+                          try {
+                            await github.rest.git.deleteRef({ owner, repo, ref: `tags/${release.tag_name}` });
+                          } catch (err) {
+                            core.warning(`Failed to delete tag ${release.tag_name}: ${err.message}`);
+                          }
+                        }
+                      }
