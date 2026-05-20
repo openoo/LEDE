@@ -19,6 +19,7 @@ git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-app-argon-
 rm -rf package/custom-feeds
 mkdir -p package/custom-feeds
 git clone --depth=1 https://github.com/obsy/modemdata package/custom-feeds/obsy-modemdata
+git clone --depth=1 https://github.com/obsy/modemband package/custom-feeds/obsy-modemband
 git clone --depth=1 https://github.com/FUjr/QModem package/custom-feeds/qmodem
 git clone --depth=1 https://github.com/4IceG/luci-app-modemband package/custom-feeds/luci-app-modemband
 git clone --depth=1 https://github.com/4IceG/luci-app-atinout package/custom-feeds/luci-app-atinout
