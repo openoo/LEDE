@@ -3,6 +3,8 @@
 rm -rf package/feeds/luci/luci-theme-argon package/feeds/luci/luci-app-argon-config
 git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
+git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora package/luci-theme-aurora
+git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/luci-app-aurora-config
 
 # 独立引入需要的蜂窝网络、状态页和管理插件，不再使用 noobwrt-custom-feeds。
 rm -rf package/custom-feeds
@@ -28,77 +30,23 @@ git clone --depth=1 https://github.com/destan19/OpenAppFilter package/custom-fee
 sed -i 's/192.168.1.1/192.168.123.1/g' package/base-files/files/bin/config_generate
 
 # NSS 默认走 ECM/NSS 路径，关闭 firewall4 自带 flow offloading。
-# AW1000 的 5G 模组按 qosmio nss-setup 文档预置 3 个接口：
-#   wwan   : quectel 拨号控制接口
-#   wwan_4 : IPv4 DHCP 数据接口
-#   wwan_6 : IPv6 DHCPv6 数据接口
+# 5G 模组由 QModem 自动创建蜂窝接口，编译时不预置 qosmio 示例接口。
 mkdir -p files/etc/uci-defaults
 cat > files/etc/uci-defaults/99-aw1000-nss-defaults << 'EOF'
 #!/bin/sh
 
-uci -q set wireless.radio0.country='US'
-uci -q set wireless.radio1.country='US'
-uci -q set wireless.radio2.country='US'
-uci -q set wireless.radio1.disabled='0'
-uci -q set wireless.radio2.disabled='0'
 uci -q set pbuf.opt.memory_profile='auto'
 uci -q set network.globals.packet_steering='0'
 uci -q set firewall.@defaults[0].flow_offloading='0'
 uci -q set firewall.@defaults[0].flow_offloading_hw='0'
-uci -q set ecm.@general[0].enable_bridge_filtering='0'
-uci -q set system.@system[0].cronloglevel='7'
 
 for dev in $(uci -q show network | sed -n "s/^\(network\.[^.]*\)\.vlan_filtering='1'$/\1/p"); do
 	uci -q delete "${dev}.vlan_filtering"
 done
 
-uci -q set network.wwan='interface'
-uci -q set network.wwan.proto='quectel'
-uci -q set network.wwan.auth='none'
-uci -q set network.wwan.delay='5'
-uci -q set network.wwan.mtu='1500'
-uci -q set network.wwan.pdptype='ipv4v6'
-uci -q set network.wwan.device='/dev/cdc-wdm0'
-uci -q set network.wwan.apn='internet'
-uci -q delete network.wwan.dns
-uci -q add_list network.wwan.dns='1.1.1.1'
-uci -q add_list network.wwan.dns='1.0.0.1'
-
-uci -q set network.wwan_4='interface'
-uci -q set network.wwan_4.proto='dhcp'
-uci -q set network.wwan_4.peerdns='1'
-uci -q set network.wwan_4.defaultroute='1'
-uci -q set network.wwan_4.metric='10'
-uci -q set network.wwan_4.device='wwan0_1'
-
-uci -q set network.wwan_6='interface'
-uci -q set network.wwan_6.proto='dhcpv6'
-uci -q set network.wwan_6.reqaddress='try'
-uci -q set network.wwan_6.reqprefix='auto'
-uci -q set network.wwan_6.peerdns='1'
-uci -q set network.wwan_6.defaultroute='1'
-uci -q set network.wwan_6.metric='20'
-uci -q set network.wwan_6.device='wwan0_1'
-
-wan_zone="$(uci show firewall | sed -n "s/^firewall\.\([^=]*\)\.name='wan'$/\1/p" | head -n1)"
-if [ -n "$wan_zone" ]; then
-	uci -q set firewall.${wan_zone}.masq='1'
-	uci -q set firewall.${wan_zone}.mtu_fix='1'
-	current_networks="$(uci -q get firewall.${wan_zone}.network)"
-	for net in wwan wwan_4 wwan_6; do
-		case " $current_networks " in
-			*" $net "*) ;;
-			*) uci -q add_list firewall.${wan_zone}.network="$net" ;;
-		esac
-	done
-fi
-
-uci commit wireless
 uci commit pbuf
-uci commit firewall
-uci commit ecm
-uci commit system
 uci commit network
+uci commit firewall
 
 exit 0
 EOF
