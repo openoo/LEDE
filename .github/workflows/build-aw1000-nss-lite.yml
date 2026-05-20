@@ -48,8 +48,7 @@ jobs:
                   DEBIAN_FRONTEND: noninteractive
               run: |
                   sudo -E apt-get -qq update --fix-missing
-                  sudo -E apt-get -qq full-upgrade -y
-                  sudo -E apt-get -qq install -y $(cat "$GITHUB_WORKSPACE/deps/ubuntu.txt")
+                  sudo -E apt-get -qq install -y --no-install-recommends $(cat "$GITHUB_WORKSPACE/deps/ubuntu.txt")
                   sudo -E apt-get -qq autoremove --purge -y
                   sudo -E apt-get -qq clean
                   sudo timedatectl set-timezone "$TZ"
