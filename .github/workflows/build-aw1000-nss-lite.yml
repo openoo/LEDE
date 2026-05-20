@@ -137,7 +137,7 @@ jobs:
               working-directory: ./openwrt
               run: |
                   make defconfig
-                  ./scripts/diffconfig.sh > ../aw1000-nss-lite-diffconfig.txt
+                  ./scripts/diffconfig.sh > "$GITHUB_WORKSPACE/aw1000-nss-lite-diffconfig.txt"
                   make download -j8
                   find dl -size -1024c -exec ls -l {} \;
                   find dl -size -1024c -exec rm -f {} \;
@@ -160,7 +160,7 @@ jobs:
                   find openwrt/bin/targets/qualcommax/ipq807x -maxdepth 1 -type f -name '*arcadyan_aw1000*' -exec cp -a {} release_artifacts/ \;
                   cp -a openwrt/bin/targets/qualcommax/ipq807x/sha256sums release_artifacts/ 2>/dev/null || true
                   cp -a openwrt/.config release_artifacts/aw1000-nss-lite-full.config
-                  cp -a aw1000-nss-lite-diffconfig.txt release_artifacts/aw1000-nss-lite-diffconfig.txt
+                  cp -a "$GITHUB_WORKSPACE/aw1000-nss-lite-diffconfig.txt" release_artifacts/aw1000-nss-lite-diffconfig.txt
 
             - name: 📤 上传 AW1000 Lite 固件产物
               if: ${{ steps.compile.outputs.status == 'success' && !cancelled() }}
