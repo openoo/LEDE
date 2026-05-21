@@ -22,7 +22,6 @@ git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/custom-fee
 git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/custom-feeds/luci-app-bandix
 git clone --depth=1 https://github.com/sbwml/autocore-arm package/custom-feeds/autocore-arm
 git clone --depth=1 https://github.com/derisamedia/luci-app-arwi-dashboard package/custom-feeds/luci-app-arwi-dashboard
-git clone --depth=1 https://github.com/sbwml/luci-app-ramfree.git package/custom-feeds/luci-app-ramfree
 git clone --depth=1 https://github.com/4IceG/luci-app-modemdata package/custom-feeds/luci-app-modemdata
 git clone --depth=1 https://github.com/destan19/OpenAppFilter package/custom-feeds/OpenAppFilter
 
@@ -35,6 +34,29 @@ mkdir -p files/etc/uci-defaults
 cat > files/etc/uci-defaults/99-aw1000-nss-defaults << 'EOF'
 #!/bin/sh
 
+for radio in radio0 radio1 radio2; do
+	if uci -q get wireless.${radio} >/dev/null; then
+		uci -q set wireless.${radio}.country='US'
+		uci -q set wireless.${radio}.disabled='0'
+	fi
+done
+
+# AW1000 实测 radio0 为 5G；一加 Ace 5 Pro 在低信道 HE160 可协商 2400Mbps。
+if uci -q get wireless.radio0 >/dev/null; then
+	uci -q set wireless.radio0.channel='36'
+	uci -q set wireless.radio0.htmode='HE160'
+fi
+
+# 默认无线名称、密码和加密方式：三个频段统一使用同一个 SSID。
+for wifi_iface in $(uci -q show wireless | sed -n "s/^\(wireless\.[^.]*\)=wifi-iface$/\1/p"); do
+	uci -q set "${wifi_iface}.mode=ap"
+	uci -q set "${wifi_iface}.network=lan"
+	uci -q set "${wifi_iface}.ssid=AW1K"
+	uci -q set "${wifi_iface}.encryption=psk2+ccmp"
+	uci -q set "${wifi_iface}.key=888888889"
+	uci -q set "${wifi_iface}.disabled=0"
+done
+
 uci -q set pbuf.opt.memory_profile='auto'
 uci -q set network.globals.packet_steering='0'
 uci -q set firewall.@defaults[0].flow_offloading='0'
@@ -44,6 +66,7 @@ for dev in $(uci -q show network | sed -n "s/^\(network\.[^.]*\)\.vlan_filtering
 	uci -q delete "${dev}.vlan_filtering"
 done
 
+uci commit wireless
 uci commit pbuf
 uci commit network
 uci commit firewall
