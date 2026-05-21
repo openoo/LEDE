@@ -23,6 +23,18 @@ git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/custom-fe
 git clone --depth=1 https://github.com/sbwml/autocore-arm package/custom-feeds/autocore-arm
 git clone --depth=1 https://github.com/derisamedia/luci-app-arwi-dashboard package/custom-feeds/luci-app-arwi-dashboard
 git clone --depth=1 https://github.com/4IceG/luci-app-modemdata package/custom-feeds/luci-app-modemdata
+
+# 清理 feeds 或旧源码中可能残留的 OpenAppFilter，避免 kmod-oaf/appfilter/luci-app-oaf 重复定义。
+rm -rf \
+	package/custom-feeds/OpenAppFilter \
+	package/OpenAppFilter \
+	package/appfilter \
+	package/kmod-oaf \
+	package/luci-app-oaf \
+	package/feeds/*/OpenAppFilter \
+	package/feeds/*/appfilter \
+	package/feeds/*/kmod-oaf \
+	package/feeds/*/luci-app-oaf
 git clone --depth=1 https://github.com/destan19/OpenAppFilter package/custom-feeds/OpenAppFilter
 
 # 默认后台地址

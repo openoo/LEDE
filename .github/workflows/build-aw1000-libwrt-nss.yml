@@ -10,7 +10,6 @@ permissions:
 env:
     REPO_URL: https://github.com/LiBwrt/openwrt-6.x.git
     REPO_BRANCH: main-nss
-    NSS_PACKAGES_BRANCH: NSS-12.5-K6.x-wwan
     CONFIG_FILE: AW1000-NSS/.config
     DIY_SH: AW1000-NSS/diy.sh
     FILES: AW1000-NSS/files
@@ -80,9 +79,8 @@ jobs:
                       /workdir/openwrt/build_dir/toolchain-*
                       /workdir/openwrt/staging_dir/host
                       /workdir/openwrt/staging_dir/toolchain-*
-                  key: ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-${{ env.NSS_PACKAGES_BRANCH }}-${{ hashFiles('AW1000-NSS/.config', 'AW1000-NSS/diy.sh', 'AW1000-NSS/files/**') }}
+                  key: ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-${{ hashFiles('AW1000-NSS/.config', 'AW1000-NSS/diy.sh', 'AW1000-NSS/files/**') }}
                   restore-keys: |
-                      ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-${{ env.NSS_PACKAGES_BRANCH }}-
                       ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-
 
             - name: 🛠️ 准备脚本和配置
@@ -97,9 +95,8 @@ jobs:
               run: |
                   sed -i '1isrc-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git;main' feeds.conf.default
                   sed -i '1isrc-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' feeds.conf.default
-                  sed -i -E "s|(src-git nss_packages https://github.com/qosmio/nss-packages.git)(;[^[:space:]]+)?|\\1;${NSS_PACKAGES_BRANCH}|" feeds.conf.default
                   grep -n "passwall_.*Openwrt-Passwall" feeds.conf.default
-                  grep -n "nss_packages.*${NSS_PACKAGES_BRANCH}" feeds.conf.default
+                  grep -n "nss_packages.*qosmio/nss-packages" feeds.conf.default
                   ./scripts/feeds update -a
 
             - name: 🧩 调整 feeds 源码
@@ -197,7 +194,7 @@ jobs:
                   token: ${{ secrets.GITHUB_TOKEN }}
                   body: |
                       基于 LiBwrt/openwrt-6.x 的 main-nss 分支构建
-                      NSS 包分支: NSS-12.5-K6.x-wwan
+                      NSS 包分支: 使用 LiBwrt feeds.conf.default 默认分支
                       配置: AW1000-NSS/.config
                       设备: Arcadyan AW1000
                       默认管理地址: 192.168.123.1
