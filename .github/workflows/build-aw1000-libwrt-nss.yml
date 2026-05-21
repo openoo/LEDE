@@ -112,7 +112,10 @@ jobs:
                     sed -i 's/^PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/' "$sms_tool_makefile"
                   fi
 
-                  rm -rf feeds/luci/themes/luci-theme-argon feeds/luci/applications/luci-app-argon-config
+                  rm -rf \
+                    feeds/luci/themes/luci-theme-argon \
+                    feeds/luci/applications/luci-app-argon-config \
+                    feeds/luci/applications/luci-app-passwall
                   ./scripts/feeds install -a
 
             - name: ⚙️ 加载 Lite 配置和自定义脚本

@@ -1,10 +1,42 @@
 #!/bin/bash
 # 清除 feeds 中自带的 Argon，避免和 jerrykuku 的 master 版本冲突。
-rm -rf package/feeds/luci/luci-theme-argon package/feeds/luci/luci-app-argon-config
+rm -rf \
+  feeds/luci/themes/luci-theme-argon \
+  feeds/luci/applications/luci-app-argon-config \
+  package/feeds/luci/luci-theme-argon \
+  package/feeds/luci/luci-app-argon-config
 git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 git clone --depth=1 https://github.com/eamonxg/luci-theme-aurora package/luci-theme-aurora
 git clone --depth=1 https://github.com/eamonxg/luci-app-aurora-config package/luci-app-aurora-config
+
+# 清除 feeds 中和自定义仓库重名的旧包，确保后面 clone 的版本被编译系统选中。
+rm -rf \
+  package/feeds/luci/luci-app-3ginfo-lite \
+  package/feeds/luci/luci-app-atinout \
+  package/feeds/luci/luci-app-aw1k-led \
+  package/feeds/luci/luci-app-bandix \
+  package/feeds/luci/luci-app-modemband \
+  package/feeds/luci/luci-app-modemdata \
+  package/feeds/luci/luci-app-passwall \
+  package/feeds/luci/luci-app-qfirehose \
+  package/feeds/luci/luci-app-qmodem \
+  package/feeds/luci/luci-app-qmodem-hc \
+  package/feeds/luci/luci-app-qmodem-monitor \
+  package/feeds/luci/luci-app-qmodem-mwan \
+  package/feeds/luci/luci-app-qmodem-next \
+  package/feeds/luci/luci-app-qmodem-sms \
+  package/feeds/luci/luci-app-qmodem-ttl \
+  package/feeds/luci/luci-app-qmodem-ttlfw4 \
+  package/feeds/luci/luci-app-sms-tool-js \
+  package/feeds/packages/atinout \
+  package/feeds/packages/modemband \
+  package/feeds/packages/modemdata \
+  package/feeds/packages/openwrt-bandix \
+  package/feeds/packages/qfirehose \
+  package/feeds/packages/qmodem \
+  package/feeds/packages/sms_forwarder \
+  package/feeds/packages/sms_forwarder_next
 
 # 独立引入需要的蜂窝网络、状态页和管理插件，不再使用 noobwrt-custom-feeds。
 rm -rf package/custom-feeds
