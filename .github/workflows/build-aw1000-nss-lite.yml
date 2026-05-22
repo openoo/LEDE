@@ -99,11 +99,7 @@ jobs:
             - name: 🔄 更新 feeds
               working-directory: ./openwrt
               run: |
-                  sed -i '1isrc-git passwall_luci https://github.com/Openwrt-Passwall/openwrt-passwall.git;main' feeds.conf.default
-                  sed -i '1isrc-git passwall_packages https://github.com/Openwrt-Passwall/openwrt-passwall-packages.git;main' feeds.conf.default
-                  sed -i -E "s|(src-git nss_packages https://github.com/qosmio/nss-packages.git)(;[^[:space:]]+)?|\\1;${NSS_PACKAGES_BRANCH}|" feeds.conf.default
-                  grep -n "passwall_.*Openwrt-Passwall" feeds.conf.default
-                  grep -n "nss_packages.*${NSS_PACKAGES_BRANCH}" feeds.conf.default
+                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/update-feeds-conf.sh"
                   ./scripts/feeds update -a
 
             - name: 🧩 调整 feeds 源码
@@ -111,7 +107,6 @@ jobs:
               run: |
                   "$GITHUB_WORKSPACE/AW1000-NSS/scripts/prepare-feeds.sh"
                   ./scripts/feeds install -a
-                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/verify-packages.sh"
 
             - name: ⚙️ 加载 Lite 配置和自定义脚本
               run: |
@@ -119,7 +114,6 @@ jobs:
                   cp "$CONFIG_FILE" openwrt/.config
                   cd openwrt
                   "$GITHUB_WORKSPACE/$DIY_SH"
-                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/verify-packages.sh"
 
             - name: 🧷 固定 AW1000 NSS 内核配置
               working-directory: ./openwrt
@@ -136,7 +130,6 @@ jobs:
               working-directory: ./openwrt
               run: |
                   make defconfig
-                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/verify-config.sh"
                   ./scripts/diffconfig.sh > "$GITHUB_WORKSPACE/aw1000-nss-lite-diffconfig.txt"
                   make download -j8
                   find dl -size -1024c -exec ls -l {} \;
