@@ -112,6 +112,7 @@ jobs:
             - name: ⚙️ 加载 Lite 配置和自定义脚本
               run: |
                   [ -e "$FILES" ] && cp -a "$FILES" openwrt/files
+                  find openwrt/files/etc/uci-defaults openwrt/files/etc/hotplug.d -type f -exec chmod 0755 {} \; 2>/dev/null || true
                   cp "$CONFIG_FILE" openwrt/.config
                   cd openwrt
                   "$GITHUB_WORKSPACE/$DIY_SH"
