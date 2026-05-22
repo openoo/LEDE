@@ -15,6 +15,13 @@ rm -rf \
 git clone --depth=1 https://github.com/pymumu/openwrt-smartdns feeds/packages/net/smartdns
 git clone --depth=1 --branch=master https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
 
+# 当前 openwrt-smartdns 的 smartdns-webui 下载段使用 HASH:=$(SMARTDNS_WEBUI_HASH)，
+# 但 Makefile 没有定义 SMARTDNS_WEBUI_HASH；补齐后 make download 才能稳定校验 WebUI 源码包。
+smartdns_makefile="feeds/packages/net/smartdns/Makefile"
+if [ -f "$smartdns_makefile" ] && ! grep -q '^SMARTDNS_WEBUI_HASH:=' "$smartdns_makefile"; then
+	sed -i '/^SMARTDNS_WEBUI_FILE:=/a SMARTDNS_WEBUI_HASH:=227eef2dfffb56445145e7b8a76f6d6fa678ce3e99aceec58f7d35564f4cfafd' "$smartdns_makefile"
+fi
+
 echo "==> 固定 sms-tool 源码版本"
 sms_tool_makefile="feeds/packages/utils/sms-tool/Makefile"
 if [ -f "$sms_tool_makefile" ]; then
