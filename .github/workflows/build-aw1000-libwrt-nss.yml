@@ -84,7 +84,7 @@ jobs:
                       /workdir/openwrt/build_dir/toolchain-*
                       /workdir/openwrt/staging_dir/host
                       /workdir/openwrt/staging_dir/toolchain-*
-                  key: ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-${{ hashFiles('AW1000-NSS/.config', 'AW1000-NSS/diy.sh', 'AW1000-NSS/files/**') }}
+                  key: ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-${{ hashFiles('AW1000-NSS/.config', 'AW1000-NSS/diy.sh', 'AW1000-NSS/scripts/**', 'AW1000-NSS/files/**') }}
                   restore-keys: |
                       ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-
 
@@ -92,8 +92,10 @@ jobs:
               run: |
                   [ -e "$CONFIG_FILE" ] && dos2unix "$CONFIG_FILE"
                   [ -e "$DIY_SH" ] && dos2unix "$DIY_SH"
+                  find AW1000-NSS/scripts -type f -exec dos2unix {} \;
                   find "$FILES" -type f -exec dos2unix {} \; || true
                   chmod +x "$DIY_SH"
+                  find AW1000-NSS/scripts -type f -name "*.sh" -exec chmod +x {} \;
 
             - name: 🔄 更新 feeds
               working-directory: ./openwrt
@@ -107,31 +109,9 @@ jobs:
             - name: 🧩 调整 feeds 源码
               working-directory: ./openwrt
               run: |
-                  rm -rf feeds/packages/lang/golang
-                  git clone --depth=1 --branch=26.x https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang
-
-                  rm -rf \
-                    feeds/packages/net/smartdns \
-                    feeds/packages/utils/smartdns \
-                    feeds/luci/applications/luci-app-smartdns
-                  git clone --depth=1 https://github.com/pymumu/openwrt-smartdns feeds/packages/net/smartdns
-                  git clone --depth=1 --branch=master https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
-
-                  sms_tool_makefile="feeds/packages/utils/sms-tool/Makefile"
-                  if [ -f "$sms_tool_makefile" ]; then
-                    sed -i 's/^PKG_SOURCE_DATE:=.*/PKG_SOURCE_DATE:=2026-05-16/' "$sms_tool_makefile"
-                    sed -i 's/^PKG_SOURCE_VERSION:=.*/PKG_SOURCE_VERSION:=94899dc987d3a63bd04f8b8e25f6296381d76790/' "$sms_tool_makefile"
-                    sed -i 's/^PKG_MIRROR_HASH:=.*/PKG_MIRROR_HASH:=skip/' "$sms_tool_makefile"
-                  fi
-
-                  rm -rf \
-                    feeds/luci/themes/luci-theme-argon \
-                    feeds/luci/applications/luci-app-argon-config \
-                    feeds/luci/applications/luci-app-passwall \
-                    feeds/luci/applications/luci-app-quickfile \
-                    feeds/packages/net/quickfile \
-                    feeds/packages/utils/quickfile
+                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/prepare-feeds.sh"
                   ./scripts/feeds install -a
+                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/verify-packages.sh"
 
             - name: ⚙️ 加载 Lite 配置和自定义脚本
               run: |
@@ -139,6 +119,7 @@ jobs:
                   cp "$CONFIG_FILE" openwrt/.config
                   cd openwrt
                   "$GITHUB_WORKSPACE/$DIY_SH"
+                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/verify-packages.sh"
 
             - name: 🧷 固定 AW1000 NSS 内核配置
               working-directory: ./openwrt
@@ -155,6 +136,7 @@ jobs:
               working-directory: ./openwrt
               run: |
                   make defconfig
+                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/verify-config.sh"
                   ./scripts/diffconfig.sh > "$GITHUB_WORKSPACE/aw1000-libwrt-nss-diffconfig.txt"
                   make download -j8
                   find dl -size -1024c -exec ls -l {} \;
