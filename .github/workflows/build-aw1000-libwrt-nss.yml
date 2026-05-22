@@ -2,6 +2,19 @@ name: 📦 编译 AW1000 LiBwrt NSS OpenWrt
 
 on:
     workflow_dispatch:
+        inputs:
+            theme_argon:
+                description: "启用 Argon 主题和配置页面"
+                type: boolean
+                default: true
+            theme_aurora:
+                description: "启用 Aurora 主题和配置页面"
+                type: boolean
+                default: false
+            theme_alpha:
+                description: "启用 Alpha 主题和配置页面"
+                type: boolean
+                default: false
 
 permissions:
     contents: write
@@ -41,6 +54,21 @@ jobs:
 
             - name: 📥 检出当前仓库
               uses: actions/checkout@v6
+
+            - name: 🎨 校验主题选择
+              env:
+                  THEME_ARGON: ${{ inputs.theme_argon }}
+                  THEME_AURORA: ${{ inputs.theme_aurora }}
+                  THEME_ALPHA: ${{ inputs.theme_alpha }}
+              run: |
+                  theme_count=0
+                  [ "$THEME_ARGON" = "true" ] && theme_count=$((theme_count + 1))
+                  [ "$THEME_AURORA" = "true" ] && theme_count=$((theme_count + 1))
+                  [ "$THEME_ALPHA" = "true" ] && theme_count=$((theme_count + 1))
+                  if [ "$theme_count" -lt 1 ]; then
+                    echo "::error::至少选择一个主题：Argon、Aurora、Alpha"
+                    exit 1
+                  fi
 
             - name: 🧰 安装编译依赖
               env:
@@ -110,12 +138,37 @@ jobs:
                   ./scripts/feeds install -a
 
             - name: ⚙️ 加载 Lite 配置和自定义脚本
+              env:
+                  THEME_ARGON: ${{ inputs.theme_argon }}
+                  THEME_AURORA: ${{ inputs.theme_aurora }}
+                  THEME_ALPHA: ${{ inputs.theme_alpha }}
               run: |
                   [ -e "$FILES" ] && cp -a "$FILES" openwrt/files
                   find openwrt/files/etc/uci-defaults openwrt/files/etc/hotplug.d -type f -exec chmod 0755 {} \; 2>/dev/null || true
                   cp "$CONFIG_FILE" openwrt/.config
                   cd openwrt
                   "$GITHUB_WORKSPACE/$DIY_SH"
+                  sed -i \
+                    -e '/^CONFIG_PACKAGE_luci-theme-argon=/d' \
+                    -e '/^CONFIG_PACKAGE_luci-app-argon-config=/d' \
+                    -e '/^CONFIG_PACKAGE_luci-theme-aurora=/d' \
+                    -e '/^CONFIG_PACKAGE_luci-app-aurora-config=/d' \
+                    -e '/^CONFIG_PACKAGE_luci-theme-alpha=/d' \
+                    -e '/^CONFIG_PACKAGE_luci-app-alpha-config=/d' \
+                    -e '/^# CONFIG_PACKAGE_luci-theme-argon is not set/d' \
+                    -e '/^# CONFIG_PACKAGE_luci-app-argon-config is not set/d' \
+                    -e '/^# CONFIG_PACKAGE_luci-theme-aurora is not set/d' \
+                    -e '/^# CONFIG_PACKAGE_luci-app-aurora-config is not set/d' \
+                    -e '/^# CONFIG_PACKAGE_luci-theme-alpha is not set/d' \
+                    -e '/^# CONFIG_PACKAGE_luci-app-alpha-config is not set/d' \
+                    .config
+                  {
+                    echo ''
+                    echo '### workflow 主题选择 ###'
+                    [ "$THEME_ARGON" = "true" ] && echo 'CONFIG_PACKAGE_luci-theme-argon=y' && echo 'CONFIG_PACKAGE_luci-app-argon-config=y'
+                    [ "$THEME_AURORA" = "true" ] && echo 'CONFIG_PACKAGE_luci-theme-aurora=y' && echo 'CONFIG_PACKAGE_luci-app-aurora-config=y'
+                    [ "$THEME_ALPHA" = "true" ] && echo 'CONFIG_PACKAGE_luci-theme-alpha=y' && echo 'CONFIG_PACKAGE_luci-app-alpha-config=y'
+                  } >> .config
 
             - name: 🧷 固定 AW1000 NSS 内核配置
               working-directory: ./openwrt

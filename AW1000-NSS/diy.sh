@@ -39,11 +39,15 @@ rm -rf \
 	package/luci-theme-argon \
 	package/luci-app-argon-config \
 	package/luci-theme-aurora \
-	package/luci-app-aurora-config
+	package/luci-app-aurora-config \
+	package/luci-theme-alpha \
+	package/luci-app-alpha-config
 git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-theme-argon package/luci-theme-argon
 git clone --depth=1 --branch=master https://github.com/jerrykuku/luci-app-argon-config package/luci-app-argon-config
 git clone --depth=1 --branch=master https://github.com/eamonxg/luci-theme-aurora package/luci-theme-aurora
 git clone --depth=1 --branch=master https://github.com/eamonxg/luci-app-aurora-config package/luci-app-aurora-config
+git clone --depth=1 https://github.com/derisamedia/luci-theme-alpha package/luci-theme-alpha
+git clone --depth=1 https://github.com/derisamedia/luci-app-alpha-config package/luci-app-alpha-config
 
 echo "==> 引入 AW1000、蜂窝网络、状态页和管理插件"
 rm -rf package/custom-feeds
