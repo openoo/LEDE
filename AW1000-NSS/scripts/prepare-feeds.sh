@@ -7,6 +7,16 @@ echo "==> 替换 Go 工具链"
 rm -rf feeds/packages/lang/golang
 git clone --depth=1 --branch=26.x https://github.com/sbwml/packages_lang_golang feeds/packages/lang/golang
 
+if [ "${USE_PYMUMU_SMARTDNS:-0}" = "1" ]; then
+	echo "==> 使用 pymumu SmartDNS 官方 OpenWrt 包和 LuCI 页面"
+	rm -rf \
+		feeds/packages/net/smartdns \
+		feeds/packages/utils/smartdns \
+		feeds/luci/applications/luci-app-smartdns
+	git clone --depth=1 https://github.com/pymumu/openwrt-smartdns feeds/packages/net/smartdns
+	git clone --depth=1 --branch=master https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
+fi
+
 echo "==> 固定 sms-tool 源码版本"
 sms_tool_makefile="feeds/packages/utils/sms-tool/Makefile"
 if [ -f "$sms_tool_makefile" ]; then

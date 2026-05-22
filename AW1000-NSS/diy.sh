@@ -59,7 +59,6 @@ git clone --depth=1 https://github.com/4IceG/luci-app-sms-tool-js package/custom
 git clone --depth=1 https://github.com/4IceG/luci-app-qfirehose.git package/custom-feeds/luci-app-qfirehose
 git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/custom-feeds/openwrt-bandix
 git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/custom-feeds/luci-app-bandix
-git clone --depth=1 https://github.com/sbwml/autocore-arm package/custom-feeds/autocore-arm
 git clone --depth=1 https://github.com/derisamedia/luci-app-arwi-dashboard package/custom-feeds/luci-app-arwi-dashboard
 git clone --depth=1 https://github.com/4IceG/luci-app-modemdata package/custom-feeds/luci-app-modemdata
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/custom-feeds/luci-app-quickfile

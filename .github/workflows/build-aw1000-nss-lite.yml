@@ -11,6 +11,7 @@ env:
     REPO_URL: https://github.com/qosmio/openwrt-ipq.git
     REPO_BRANCH: 24.10-nss
     NSS_PACKAGES_BRANCH: NSS-12.5-K6.x-wwan
+    USE_PYMUMU_SMARTDNS: "1"
     CONFIG_FILE: AW1000-NSS/.config
     DIY_SH: AW1000-NSS/diy.sh
     FILES: AW1000-NSS/files
@@ -106,6 +107,9 @@ jobs:
               working-directory: ./openwrt
               run: |
                   "$GITHUB_WORKSPACE/AW1000-NSS/scripts/prepare-feeds.sh"
+                  if [ "${USE_PYMUMU_SMARTDNS:-0}" = "1" ]; then
+                    ./scripts/feeds update -i packages luci
+                  fi
                   ./scripts/feeds install -a
 
             - name: ⚙️ 加载 Lite 配置和自定义脚本
