@@ -15,6 +15,11 @@ if [ "${USE_PYMUMU_SMARTDNS:-0}" = "1" ]; then
 		feeds/luci/applications/luci-app-smartdns
 	git clone --depth=1 https://github.com/pymumu/openwrt-smartdns feeds/packages/net/smartdns
 	git clone --depth=1 --branch=master https://github.com/pymumu/luci-app-smartdns feeds/luci/applications/luci-app-smartdns
+	# openwrt-smartdns passes TARGET_CC into a shell environment assignment.
+	# With ccache enabled, TARGET_CC contains a space ("ccache <triplet>-gcc");
+	# without quotes the shell runs the cross compiler directly and ld tries to
+	# read plugin/smartdns-ui as an input directory.
+	sed -i 's/CC=$(TARGET_CC)[[:space:]]*\\/CC="$(TARGET_CC)" \\/' feeds/packages/net/smartdns/Makefile
 fi
 
 echo "==> 固定 sms-tool 源码版本"
