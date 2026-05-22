@@ -132,7 +132,10 @@ jobs:
               run: |
                   make defconfig
                   ./scripts/diffconfig.sh > "$GITHUB_WORKSPACE/aw1000-nss-lite-diffconfig.txt"
-                  make download -j8
+                  make download -j8 || {
+                    make package/feeds/packages/smartdns/download V=s
+                    exit 1
+                  }
                   find dl -size -1024c -exec ls -l {} \;
                   find dl -size -1024c -exec rm -f {} \;
 
