@@ -28,13 +28,18 @@ rm -rf \
   package/feeds/luci/luci-app-qmodem-sms \
   package/feeds/luci/luci-app-qmodem-ttl \
   package/feeds/luci/luci-app-qmodem-ttlfw4 \
+  package/feeds/luci/luci-app-quickfile \
+  package/feeds/luci/luci-app-smartdns \
   package/feeds/luci/luci-app-sms-tool-js \
   package/feeds/packages/atinout \
   package/feeds/packages/modemband \
   package/feeds/packages/modemdata \
   package/feeds/packages/openwrt-bandix \
   package/feeds/packages/qfirehose \
+  package/feeds/packages/quickfile \
   package/feeds/packages/qmodem \
+  package/feeds/packages/smartdns \
+  package/feeds/packages/smartdns-ui \
   package/feeds/packages/sms_forwarder \
   package/feeds/packages/sms_forwarder_next
 
@@ -55,6 +60,7 @@ git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/custom-fe
 git clone --depth=1 https://github.com/sbwml/autocore-arm package/custom-feeds/autocore-arm
 git clone --depth=1 https://github.com/derisamedia/luci-app-arwi-dashboard package/custom-feeds/luci-app-arwi-dashboard
 git clone --depth=1 https://github.com/4IceG/luci-app-modemdata package/custom-feeds/luci-app-modemdata
+git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/custom-feeds/luci-app-quickfile
 
 # 默认后台地址
 sed -i 's/192.168.1.1/192.168.123.1/g' package/base-files/files/bin/config_generate
