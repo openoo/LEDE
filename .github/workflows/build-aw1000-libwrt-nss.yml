@@ -165,9 +165,18 @@ jobs:
                   {
                     echo ''
                     echo '### workflow 主题选择 ###'
-                    [ "$THEME_ARGON" = "true" ] && echo 'CONFIG_PACKAGE_luci-theme-argon=y' && echo 'CONFIG_PACKAGE_luci-app-argon-config=y'
-                    [ "$THEME_AURORA" = "true" ] && echo 'CONFIG_PACKAGE_luci-theme-aurora=y' && echo 'CONFIG_PACKAGE_luci-app-aurora-config=y'
-                    [ "$THEME_ALPHA" = "true" ] && echo 'CONFIG_PACKAGE_luci-theme-alpha=y' && echo 'CONFIG_PACKAGE_luci-app-alpha-config=y'
+                    if [ "$THEME_ARGON" = "true" ]; then
+                      echo 'CONFIG_PACKAGE_luci-theme-argon=y'
+                      echo 'CONFIG_PACKAGE_luci-app-argon-config=y'
+                    fi
+                    if [ "$THEME_AURORA" = "true" ]; then
+                      echo 'CONFIG_PACKAGE_luci-theme-aurora=y'
+                      echo 'CONFIG_PACKAGE_luci-app-aurora-config=y'
+                    fi
+                    if [ "$THEME_ALPHA" = "true" ]; then
+                      echo 'CONFIG_PACKAGE_luci-theme-alpha=y'
+                      echo 'CONFIG_PACKAGE_luci-app-alpha-config=y'
+                    fi
                   } >> .config
 
             - name: 🧷 固定 AW1000 NSS 内核配置
