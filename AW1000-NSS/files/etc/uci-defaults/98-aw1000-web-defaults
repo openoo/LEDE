@@ -1,0 +1,27 @@
+#!/bin/sh
+
+# quickfile 使用 nginx 的 conf.d/*.locations。
+# 按官方 quickfile 示例重建 nginx 的 LAN server，保留 HTTP 访问并删除 80 -> 443 跳转。
+
+if uci -q get nginx.global >/dev/null; then
+	uci -q set nginx.global.uci_enable='true'
+	uci -q delete nginx._redirect2ssl
+	uci -q delete nginx._lan
+
+	uci -q add nginx server >/dev/null
+	uci -q rename nginx.@server[-1]='_lan'
+	uci -q set nginx._lan.server_name='_lan'
+	uci -q add_list nginx._lan.listen='80 default_server'
+	uci -q add_list nginx._lan.listen='[::]:80 default_server'
+	uci -q add_list nginx._lan.include='conf.d/*.locations'
+	uci -q set nginx._lan.access_log='off; # logd openwrt'
+
+	uci commit nginx
+fi
+
+if [ -x /etc/init.d/uhttpd ] && [ -x /etc/init.d/nginx ]; then
+	/etc/init.d/uhttpd disable
+	/etc/init.d/uhttpd stop 2>/dev/null || true
+fi
+
+exit 0
