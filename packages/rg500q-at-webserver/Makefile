@@ -9,7 +9,7 @@ PKG_LICENSE:=GPL-3.0-or-later
 
 include $(INCLUDE_DIR)/package.mk
 
-ifeq ($(ARCH),aarch64)
+ifeq ($(CONFIG_ARCH),aarch64)
 RUST_TARGET:=aarch64-unknown-linux-musl
 else
 RUST_TARGET:=unsupported

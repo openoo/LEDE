@@ -1,4 +1,4 @@
-name: 📦 编译 AW1000 自定义软件包
+name: 📦 SDK 编译 AW1000 自定义软件包
 
 on:
     workflow_dispatch:
@@ -8,41 +8,15 @@ permissions:
     actions: write
 
 env:
-    CONFIG_FILE: AW1000-NSS/.config
+    SDK_RELEASE: 24.10.6
+    SDK_TARGET: qualcommax
+    SDK_SUBTARGET: ipq807x
     TZ: Asia/Shanghai
 
 jobs:
     build-packages:
-        name: 🧩 编译 ${{ matrix.line.name }} 自定义包
+        name: 🧩 SDK 快速编译自定义包
         runs-on: ubuntu-latest
-        strategy:
-            fail-fast: false
-            matrix:
-                line:
-                    - id: libwrt-main-nss
-                      name: LiBwrt main-nss
-                      repo_url: https://github.com/LiBwrt/openwrt-6.x.git
-                      repo_branch: main-nss
-                      nss_packages_branch: ""
-                      use_pymumu_smartdns: "0"
-                      llvm_bpf_mode: snapshot
-                      llvm_bpf_url: ""
-                    - id: nss-lite-24.10
-                      name: OpenWrt 24.10 NSS Lite
-                      repo_url: https://github.com/qosmio/openwrt-ipq.git
-                      repo_branch: 24.10-nss
-                      nss_packages_branch: NSS-12.5-K6.x-wwan
-                      use_pymumu_smartdns: "1"
-                      llvm_bpf_mode: fixed
-                      llvm_bpf_url: https://downloads.openwrt.org/releases/24.10.6/targets/qualcommax/ipq807x/llvm-bpf-18.1.7.Linux-x86_64.tar.zst
-
-        env:
-            REPO_URL: ${{ matrix.line.repo_url }}
-            REPO_BRANCH: ${{ matrix.line.repo_branch }}
-            NSS_PACKAGES_BRANCH: ${{ matrix.line.nss_packages_branch }}
-            USE_PYMUMU_SMARTDNS: ${{ matrix.line.use_pymumu_smartdns }}
-            LLVM_BPF_MODE: ${{ matrix.line.llvm_bpf_mode }}
-            LLVM_BPF_URL: ${{ matrix.line.llvm_bpf_url }}
 
         steps:
             - name: 📥 检出当前仓库
@@ -53,7 +27,11 @@ jobs:
                   DEBIAN_FRONTEND: noninteractive
               run: |
                   sudo -E apt-get -qq update --fix-missing
-                  sudo -E apt-get -qq install -y --no-install-recommends $(cat "$GITHUB_WORKSPACE/deps/ubuntu.txt")
+                  sudo -E apt-get -qq install -y --no-install-recommends \
+                    build-essential clang flex bison g++ gawk gcc-multilib gettext git \
+                    libncurses-dev libssl-dev python3 python3-distutils python3-setuptools \
+                    rsync swig unzip wget zlib1g-dev file libelf-dev ccache ecj fastjar \
+                    java-propose-classpath libzstd-dev zstd dos2unix
                   sudo -E apt-get -qq autoremove --purge -y
                   sudo -E apt-get -qq clean
                   sudo timedatectl set-timezone "$TZ"
@@ -68,129 +46,78 @@ jobs:
                   rustc --version
                   cargo --version
 
-            - name: 🟢 准备 SmartDNS WebUI Node 环境
-              uses: actions/setup-node@v6
-              with:
-                  node-version: "22"
-
-            - name: 🌱 克隆 OpenWrt 源码
+            - name: 📦 下载 OpenWrt AW1000 目标 SDK
               run: |
-                  git clone --single-branch --depth=1 --branch="$REPO_BRANCH" "$REPO_URL" openwrt
-
-            - name: 🧬 提取 LLVM BPF 预编译工具链
-              working-directory: ./openwrt
-              run: |
-                  if [ ! -d target/linux/qualcommax/ipq807x ]; then
-                    echo "当前源码不是 qualcommax/ipq807x 目标，跳过 LLVM BPF 工具链"
-                    exit 0
-                  fi
-
-                  if find . -maxdepth 1 -type d -name 'llvm-bpf*' | grep -q .; then
-                    echo "LLVM BPF 工具链已存在，跳过下载"
-                    find . -maxdepth 1 -type d -name 'llvm-bpf*' -print
-                    exit 0
-                  fi
-
-                  case "${LLVM_BPF_MODE:-snapshot}" in
-                    fixed)
-                      test -n "${LLVM_BPF_URL:-}" || {
-                        echo "::error::LLVM_BPF_MODE=fixed 但 LLVM_BPF_URL 为空"
-                        exit 1
-                      }
-                      LLVM_BPF_TARBALL="$(basename "$LLVM_BPF_URL")"
-                      wget -nv "$LLVM_BPF_URL"
-                      ;;
-                    snapshot)
-                      LLVM_BPF_BASE_URL="https://downloads.openwrt.org/snapshots/targets/qualcommax/ipq807x"
-                      LLVM_BPF_TARBALL="$(wget -qO- "${LLVM_BPF_BASE_URL}/" | sed -n 's/.*href="\([^"]*llvm-bpf-[^"]*Linux-x86_64\.tar\.zst\)".*/\1/p' | head -n1)"
-                      test -n "$LLVM_BPF_TARBALL" || {
-                        echo "::error::没有在 ${LLVM_BPF_BASE_URL}/ 找到 llvm-bpf 预编译包"
-                        exit 1
-                      }
-                      wget -nv "${LLVM_BPF_BASE_URL}/${LLVM_BPF_TARBALL}"
-                      ;;
-                    none)
-                      echo "LLVM_BPF_MODE=none，跳过 LLVM BPF 工具链"
-                      exit 0
-                      ;;
-                    *)
-                      echo "::error::未知 LLVM_BPF_MODE：${LLVM_BPF_MODE}"
-                      exit 1
-                      ;;
-                  esac
-
-                  test -s "$LLVM_BPF_TARBALL" || {
-                    echo "::error::LLVM BPF 压缩包不存在或为空：$LLVM_BPF_TARBALL"
+                  SDK_BASE_URL="https://downloads.openwrt.org/releases/${SDK_RELEASE}/targets/${SDK_TARGET}/${SDK_SUBTARGET}"
+                  SDK_TARBALL="$(wget -qO- "${SDK_BASE_URL}/" | sed -n 's/.*href="\([^"]*openwrt-sdk-[^"]*Linux-x86_64\.tar\.zst\)".*/\1/p' | head -n1)"
+                  test -n "$SDK_TARBALL" || {
+                    echo "::error::没有在 ${SDK_BASE_URL}/ 找到 OpenWrt SDK"
                     exit 1
                   }
-                  tar --zstd -xf "$LLVM_BPF_TARBALL"
+                  wget -nv "${SDK_BASE_URL}/${SDK_TARBALL}"
+                  tar --zstd -xf "$SDK_TARBALL"
+                  SDK_DIR="$(find . -maxdepth 1 -type d -name 'openwrt-sdk-*' | head -n1)"
+                  test -n "$SDK_DIR" || {
+                    echo "::error::SDK 解压后未找到 openwrt-sdk-* 目录"
+                    exit 1
+                  }
+                  mv "$SDK_DIR" openwrt-sdk
+                  echo "SDK_TARBALL=$SDK_TARBALL" >> "$GITHUB_ENV"
 
-            - name: 💾 缓存包编译目录
+            - name: 💾 缓存 SDK 编译目录
               uses: actions/cache@v5
               with:
                   path: |
                       ~/.cargo
                       ~/.rustup
                       ~/.ccache
-                      openwrt/dl
-                      openwrt/build_dir/host
-                      openwrt/build_dir/toolchain-*
-                      openwrt/staging_dir/host
-                      openwrt/staging_dir/toolchain-*
-                  key: ${{ runner.os }}-aw1000-custom-packages-${{ matrix.line.id }}-${{ hashFiles('AW1000-NSS/.config', 'AW1000-NSS/scripts/**', 'packages/**') }}
+                      openwrt-sdk/dl
+                      openwrt-sdk/build_dir
+                      openwrt-sdk/staging_dir/host
+                      openwrt-sdk/staging_dir/hostpkg
+                  key: ${{ runner.os }}-aw1000-sdk-packages-${{ env.SDK_RELEASE }}-${{ hashFiles('packages/**') }}
                   restore-keys: |
-                      ${{ runner.os }}-aw1000-custom-packages-${{ matrix.line.id }}-
+                      ${{ runner.os }}-aw1000-sdk-packages-${{ env.SDK_RELEASE }}-
 
             - name: 🛠️ 准备脚本和本地包
               run: |
-                  [ -e "$CONFIG_FILE" ] && dos2unix "$CONFIG_FILE"
-                  find AW1000-NSS/scripts -type f -exec dos2unix {} \;
                   find packages -type f \( -name "*.sh" -o -name "Makefile" -o -name "*.js" -o -name "*.json" -o -name "*.rs" -o -name "*.toml" -o -name "*.md" -o -path "*/etc/config/*" -o -path "*/etc/init.d/*" -o -path "*/etc/uci-defaults/*" \) -exec dos2unix {} \; || true
-                  find AW1000-NSS/scripts -type f -name "*.sh" -exec chmod +x {} \;
 
-            - name: 🔄 更新 feeds
-              working-directory: ./openwrt
+            - name: 🔄 更新并安装 SDK feeds
+              working-directory: ./openwrt-sdk
               run: |
-                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/update-feeds-conf.sh"
                   ./scripts/feeds update -a
-
-            - name: 🧩 调整并安装 feeds
-              working-directory: ./openwrt
-              run: |
-                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/prepare-feeds.sh"
-                  if [ "${USE_PYMUMU_SMARTDNS:-0}" = "1" ]; then
-                    ./scripts/feeds update -i packages luci
-                  fi
                   ./scripts/feeds install -a
 
             - name: 📦 导入本地自定义包
               run: |
-                  mkdir -p openwrt/package/custom-feeds
+                  mkdir -p openwrt-sdk/package/custom-feeds
                   test -d packages
                   for pkg in packages/*; do
                     [ -d "$pkg" ] || continue
                     name="$(basename "$pkg")"
-                    rm -rf "openwrt/package/custom-feeds/$name"
-                    cp -a "$pkg" "openwrt/package/custom-feeds/$name"
+                    rm -rf "openwrt-sdk/package/custom-feeds/$name"
+                    cp -a "$pkg" "openwrt-sdk/package/custom-feeds/$name"
                   done
-                  find openwrt/package/custom-feeds -maxdepth 2 -name Makefile -print
+                  find openwrt-sdk/package/custom-feeds -maxdepth 2 -name Makefile -print
 
-            - name: ⚙️ 生成仅编译本地包的 AW1000 配置
+            - name: ⚙️ 生成 SDK 包配置
               run: |
-                  cp "$CONFIG_FILE" openwrt/.config
                   {
+                    echo 'CONFIG_TARGET_qualcommax=y'
+                    echo 'CONFIG_TARGET_qualcommax_ipq807x=y'
                     echo ''
-                    echo '### workflow 自定义包编译 ###'
+                    echo '### SDK 自定义包编译 ###'
                     for pkg in packages/*; do
                       [ -d "$pkg" ] || continue
                       name="$(sed -n 's/^PKG_NAME:=//p' "$pkg/Makefile" 2>/dev/null | head -n1)"
                       [ -n "$name" ] || name="$(basename "$pkg")"
                       echo "CONFIG_PACKAGE_${name}=y"
                     done
-                  } >> openwrt/.config
-                  cd openwrt
+                  } > openwrt-sdk/.config
+                  cd openwrt-sdk
                   make defconfig
-                  ./scripts/diffconfig.sh > "$GITHUB_WORKSPACE/aw1000-custom-packages-${{ matrix.line.id }}-diffconfig.txt"
+                  ./scripts/diffconfig.sh > "$GITHUB_WORKSPACE/aw1000-sdk-custom-packages-diffconfig.txt"
                   echo "==> 本次启用的本地包"
                   for pkg in "$GITHUB_WORKSPACE"/packages/*; do
                     [ -d "$pkg" ] || continue
@@ -199,15 +126,8 @@ jobs:
                     grep -E "^(CONFIG_PACKAGE_${name}=|# CONFIG_PACKAGE_${name} is not set)" .config || true
                   done
 
-            - name: 🧱 预编译 OpenWrt 工具链
-              working-directory: ./openwrt
-              run: |
-                  make tools/install -j"$(nproc)" || make tools/install -j1 V=s
-                  make toolchain/install -j"$(nproc)" || make toolchain/install -j1 V=s
-                  make package/libs/toolchain/compile V=s
-
             - name: 📥 下载本地包源码
-              working-directory: ./openwrt
+              working-directory: ./openwrt-sdk
               run: |
                   for pkg in "$GITHUB_WORKSPACE"/packages/*; do
                     [ -d "$pkg" ] || continue
@@ -216,7 +136,7 @@ jobs:
                   done
 
             - name: 🔨 编译本地自定义包
-              working-directory: ./openwrt
+              working-directory: ./openwrt-sdk
               run: |
                   failed=0
                   for pkg in "$GITHUB_WORKSPACE"/packages/*; do
@@ -231,31 +151,29 @@ jobs:
                   exit "$failed"
 
             - name: 🗂️ 整理软件包产物
-              if: ${{ !cancelled() }}
               run: |
-                  mkdir -p "package_artifacts/${{ matrix.line.id }}"
-                  cp -a "aw1000-custom-packages-${{ matrix.line.id }}-diffconfig.txt" "package_artifacts/${{ matrix.line.id }}/"
-                  if [ -d openwrt/bin/packages ]; then
-                    cp -a openwrt/bin/packages "package_artifacts/${{ matrix.line.id }}/"
+                  mkdir -p package_artifacts
+                  cp -a aw1000-sdk-custom-packages-diffconfig.txt package_artifacts/
+                  echo "$SDK_TARBALL" > package_artifacts/sdk-source.txt
+                  if [ -d openwrt-sdk/bin/packages ]; then
+                    cp -a openwrt-sdk/bin/packages package_artifacts/
                   fi
                   find package_artifacts -type f | sort
 
             - name: 📤 上传软件包产物
-              if: ${{ !cancelled() }}
               uses: actions/upload-artifact@v4
               with:
-                  name: aw1000-custom-packages-${{ matrix.line.id }}
+                  name: aw1000-sdk-custom-packages
                   path: package_artifacts/**
                   if-no-files-found: error
 
     release:
-        name: 🚀 发布 AW1000 自定义软件包
+        name: 🚀 发布 AW1000 SDK 自定义软件包
         runs-on: ubuntu-latest
         needs: build-packages
-        if: ${{ needs.build-packages.result == 'success' }}
 
         steps:
-            - name: 📥 下载所有软件包产物
+            - name: 📥 下载软件包产物
               uses: actions/download-artifact@v4
               with:
                   path: release_artifacts
@@ -266,23 +184,26 @@ jobs:
                   echo "release_date=$(date +'%Y%m%d%H%M')" >> "$GITHUB_ENV"
                   find release_artifacts -type f | sort
 
-            - name: 🚀 发布 AW1000 自定义软件包
+            - name: 🚀 发布 AW1000 SDK 自定义软件包
               uses: ncipollo/release-action@v1
               with:
-                  tag: AW1000_Custom_Packages_${{ env.release_date }}
+                  tag: AW1000_SDK_Custom_Packages_${{ env.release_date }}
                   artifacts: release_artifacts/**
                   allowUpdates: true
                   token: ${{ secrets.GITHUB_TOKEN }}
                   body: |
-                      AW1000 自定义软件包独立编译产物。
+                      AW1000 自定义软件包 SDK 快速编译产物。
 
-                      同时编译两条线路：
-                      - LiBwrt main-nss
-                      - OpenWrt 24.10 NSS Lite
+                      SDK: OpenWrt 24.10.6 qualcommax/ipq807x
+                      包来源: LEDE/packages
 
-                      包来源：LEDE/packages
-                      配置基准：AW1000-NSS/.config
-                      说明：请安装与当前固件线路匹配的 ipk，避免 ABI 或 feeds 版本不一致。
+                      适用范围:
+                      - 纯 LuCI / shell 包
+                      - 普通用户态二进制服务，例如 rg500q-at-webserver
+
+                      不适合:
+                      - kmod-* 内核模块
+                      - 强依赖 NSS 内核符号或私有内核 ABI 的包
 
             - name: 🗑️ 清理旧版本发布
               uses: actions/github-script@v8
@@ -295,7 +216,7 @@ jobs:
                       const keepLatest = Number(process.env.KEEP_LATEST || 10);
                       const deleteTags = String(process.env.DELETE_TAGS || "true").toLowerCase() === "true";
                       const { owner, repo } = context.repo;
-                      const prefix = "AW1000_Custom_Packages_";
+                      const prefix = "AW1000_SDK_Custom_Packages_";
                       const releases = await github.paginate(
                         github.rest.repos.listReleases,
                         { owner, repo, per_page: 100 }
