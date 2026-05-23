@@ -199,6 +199,13 @@ jobs:
                     grep -E "^(CONFIG_PACKAGE_${name}=|# CONFIG_PACKAGE_${name} is not set)" .config || true
                   done
 
+            - name: 🧱 预编译 OpenWrt 工具链
+              working-directory: ./openwrt
+              run: |
+                  make tools/install -j"$(nproc)" || make tools/install -j1 V=s
+                  make toolchain/install -j"$(nproc)" || make toolchain/install -j1 V=s
+                  make package/libs/toolchain/compile V=s
+
             - name: 📥 下载本地包源码
               working-directory: ./openwrt
               run: |
