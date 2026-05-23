@@ -1,0 +1,11 @@
+[package]
+name = "rg500q-at-webserver"
+version = "0.1.0"
+edition = "2021"
+license = "GPL-3.0-or-later"
+
+[profile.release]
+opt-level = "z"
+lto = true
+codegen-units = 1
+strip = true
