@@ -1,0 +1,5 @@
+#!/bin/sh
+
+[ "$ACTION" = "add" ] || [ "$ACTION" = "remove" ] || exit 0
+
+/usr/bin/aw1000-phone-led-sync.sh

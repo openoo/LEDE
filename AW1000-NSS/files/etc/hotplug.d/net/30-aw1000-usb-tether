@@ -3,14 +3,6 @@
 [ "$ACTION" = "add" ] || [ "$ACTION" = "remove" ] || exit 0
 [ -n "$INTERFACE" ] || exit 0
 
-PHONE_LED="/sys/class/leds/green:phone"
-
-set_phone_led() {
-	[ -d "$PHONE_LED" ] || return 0
-	echo none > "$PHONE_LED/trigger"
-	echo "$1" > "$PHONE_LED/brightness"
-}
-
 case "$INTERFACE" in
 	lo|br-*|lan*|wan|wwan*|phy*-ap*|gre*|gretap*|erspan*|miireg|bonding_masters)
 		exit 0
@@ -23,7 +15,6 @@ if [ "$ACTION" = "remove" ]; then
 		logger -t aw1000-usb-tether "USB tether interface ${INTERFACE} removed"
 		ifdown usbv4 2>/dev/null
 		ifdown usbv6 2>/dev/null
-		set_phone_led 0
 	fi
 	exit 0
 fi
@@ -47,7 +38,6 @@ case "$driver" in
 esac
 
 logger -t aw1000-usb-tether "detected USB tether interface ${INTERFACE} via ${driver}"
-set_phone_led 1
 
 uci -q set network.lan.ipaddr='192.168.123.1'
 uci -q set network.lan.netmask='255.255.255.0'

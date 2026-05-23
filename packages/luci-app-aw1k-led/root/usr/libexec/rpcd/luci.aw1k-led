@@ -1,0 +1,116 @@
+#!/bin/sh
+
+. /usr/share/libubox/jshn.sh
+
+signal_status() {
+    local comm qcsq qeng csq qeng_line sinr rsrp csq_value rat quality strength csq_display
+
+    comm="$(uci -q get ledstatus.settings.modem_port)"
+    [ -n "$comm" ] || comm="/dev/ttyUSB2"
+
+    qcsq="$(sms_tool -d "$comm" at 'at+qcsq' 2>/dev/null | tr -d '\r')"
+    qeng="$(sms_tool -d "$comm" at 'at+qeng="servingcell"' 2>/dev/null | tr -d '\r')"
+    csq="$(sms_tool -d "$comm" at 'at+csq' 2>/dev/null | tr -d '\r')"
+
+    qeng_line="$(echo "$qeng" | grep -E 'QENG: "servingcell".*"NR5G' | head -n1)"
+    sinr="$(echo "$qeng_line" | awk -F',' '{print $15}' | grep -oE '[-0-9.]+' | head -n1)"
+    rsrp="$(echo "$qcsq" | awk -F',' '/QCSQ: "NR5G"/ {print $2}' | grep -oE '[-0-9]+' | head -n1)"
+    csq_value="$(echo "$csq" | grep -ioE '\+csq: [0-9]+,[0-9]+' | awk -F'[:,]' '{print $2}' | tr -d ' ' | head -n1)"
+
+    case "$qcsq" in
+        *'QCSQ: "NR5G"'*) rat="NR5G" ;;
+        *'QCSQ: "LTE"'*) rat="LTE" ;;
+        *'QCSQ: "WCDMA"'*) rat="WCDMA" ;;
+        *'QCSQ: "GSM"'*) rat="GSM" ;;
+        *) rat="未知" ;;
+    esac
+
+    quality="未知"
+    if [ -n "$sinr" ]; then
+        sinr_int="$(printf "%.0f" "$sinr" 2>/dev/null)"
+        if [ "$sinr_int" -ge 20 ]; then
+            quality="极佳"
+        elif [ "$sinr_int" -ge 10 ]; then
+            quality="良好"
+        elif [ "$sinr_int" -ge 0 ]; then
+            quality="一般"
+        else
+            quality="较弱"
+        fi
+    fi
+
+    strength="未知"
+    if [ -n "$rsrp" ]; then
+        if [ "$rsrp" -ge -80 ]; then
+            strength="极佳"
+        elif [ "$rsrp" -ge -90 ]; then
+            strength="良好"
+        elif [ "$rsrp" -ge -100 ]; then
+            strength="一般"
+        else
+            strength="较弱"
+        fi
+    elif [ -n "$csq_value" ] && [ "$csq_value" != "99" ]; then
+        if [ "$csq_value" -ge 20 ]; then
+            strength="极佳"
+        elif [ "$csq_value" -ge 14 ]; then
+            strength="良好"
+        elif [ "$csq_value" -ge 10 ]; then
+            strength="一般"
+        else
+            strength="较弱"
+        fi
+    fi
+
+    if [ "$csq_value" = "99" ]; then
+        csq_display="99 / 未知"
+    elif [ -n "$csq_value" ]; then
+        csq_display="${csq_value} / ${strength}"
+    else
+        csq_display="未知"
+    fi
+
+    json_init
+    json_add_string "port" "$comm"
+    json_add_string "rat" "$rat"
+    json_add_string "sinr" "${sinr:-未知}"
+    json_add_string "quality" "$quality"
+    json_add_string "rsrp" "${rsrp:-未知}"
+    json_add_string "strength" "$strength"
+    json_add_string "csq" "${csq_value:-未知}"
+    json_add_string "csq_display" "$csq_display"
+    json_add_string "qcsq_raw" "$qcsq"
+    json_add_string "qeng_raw" "$qeng"
+    json_add_string "csq_raw" "$csq"
+    json_dump
+    json_cleanup
+}
+
+case "$1" in
+"list")
+    json_init
+    json_add_object "night_enable"
+    json_close_object
+    json_add_object "night_disable"
+    json_close_object
+    json_add_object "signal_status"
+    json_close_object
+    json_dump
+    json_cleanup
+    ;;
+"call")
+    case "$2" in
+    "night_enable")
+        /usr/bin/led-night-mode.sh enable >/dev/null 2>&1
+        echo '{"result":0}'
+        ;;
+    "night_disable")
+        /usr/bin/led-night-mode.sh disable >/dev/null 2>&1
+        echo '{"result":0}'
+        ;;
+    "signal_status")
+        signal_status
+        ;;
+    esac
+    ;;
+esac

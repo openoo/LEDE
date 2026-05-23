@@ -58,14 +58,14 @@ git clone --depth=1 https://github.com/FUjr/QModem package/custom-feeds/qmodem
 git clone --depth=1 https://github.com/4IceG/luci-app-modemband package/custom-feeds/luci-app-modemband
 git clone --depth=1 https://github.com/4IceG/luci-app-atinout package/custom-feeds/luci-app-atinout
 git clone --depth=1 https://github.com/nooblk-98/luci-app-3ginfo-lite package/custom-feeds/luci-app-3ginfo-lite
-git clone --depth=1 https://github.com/nooblk-98/luci-app-aw1k-led package/custom-feeds/luci-app-aw1k-led
+cp -a "$GITHUB_WORKSPACE/packages/luci-app-aw1k-led" package/custom-feeds/luci-app-aw1k-led
 git clone --depth=1 https://github.com/4IceG/luci-app-sms-tool-js package/custom-feeds/luci-app-sms-tool-js
 git clone --depth=1 https://github.com/4IceG/luci-app-qfirehose.git package/custom-feeds/luci-app-qfirehose
 git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/custom-feeds/openwrt-bandix
 git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/custom-feeds/luci-app-bandix
 git clone --depth=1 https://github.com/derisamedia/luci-app-arwi-dashboard package/custom-feeds/luci-app-arwi-dashboard
 git clone --depth=1 https://github.com/sbwml/luci-app-quickfile package/custom-feeds/luci-app-quickfile
-# cp -a "$GITHUB_WORKSPACE/AW1000-NSS/packages/luci-app-modemwebui" package/custom-feeds/luci-app-modemwebui
+# cp -a "$GITHUB_WORKSPACE/packages/luci-app-modemwebui" package/custom-feeds/luci-app-modemwebui
 
 echo "==> 设置默认后台地址"
 sed -i 's/192.168.1.1/192.168.123.1/g' package/base-files/files/bin/config_generate

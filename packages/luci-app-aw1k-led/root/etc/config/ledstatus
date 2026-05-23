@@ -1,0 +1,41 @@
+config ledstatus 'settings'
+	option enabled '1'
+	option interval '5'
+	option modem_port '/dev/ttyUSB2'
+
+	# 5G SINR 阈值
+	option sinr_excellent '20'
+	option sinr_good '10'
+	option sinr_average '0'
+
+	# NR5G RSRP 信号阈值，数值越接近 0 信号越强
+	option rsrp_excellent '-80'
+	option rsrp_good '-90'
+	option rsrp_average '-100'
+
+	# CSQ 信号阈值，仅在无法读取 NR5G RSRP 时作为回退
+	option csq_excellent '20'
+	option csq_good '14'
+	option csq_average '10'
+
+	# 夜间模式
+	option night_enabled '0'
+	option night_start '24:00'
+	option night_end '07:00'
+
+	# Phone 灯用于 USB 共享网络设备插拔提示；AW1000 硬件只有 green:phone 单色灯。
+	option phone_usb_tether_enabled '1'
+
+	# 5G 指示灯颜色（red/green/blue/yellow/cyan/magenta/white/off）
+	option color_5g_excellent 'green'
+	option color_5g_good 'blue'
+	option color_5g_average 'yellow'
+	option color_5g_poor 'magenta'
+	option color_5g_none 'red'
+
+	# 信号指示灯颜色
+	option color_sig_excellent 'green'
+	option color_sig_good 'blue'
+	option color_sig_average 'yellow'
+	option color_sig_weak 'magenta'
+	option color_sig_offline 'red'
