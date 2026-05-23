@@ -1,6 +1,0 @@
-#!/bin/sh
-
-chmod 755 /etc/init.d/rg500q-at-webserver 2>/dev/null
-/etc/init.d/rg500q-at-webserver enable
-
-exit 0

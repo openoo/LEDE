@@ -1,8 +1,0 @@
-config rg500q-at-webserver 'config'
-	option enabled '1'
-	option listen_host '0.0.0.0'
-	option websocket_port '8765'
-	option serial_port '/dev/ttyUSB2'
-	option serial_baudrate '115200'
-	option serial_timeout_ms '2500'
-	option auth_key ''
