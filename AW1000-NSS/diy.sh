@@ -52,15 +52,15 @@ git clone --depth=1 https://github.com/derisamedia/luci-app-alpha-config package
 echo "==> 引入 AW1000、蜂窝网络、状态页和管理插件"
 rm -rf package/custom-feeds
 mkdir -p package/custom-feeds
-git clone --depth=1 https://github.com/obsy/modemdata package/custom-feeds/obsy-modemdata
-git clone --depth=1 https://github.com/obsy/modemband package/custom-feeds/obsy-modemband
+# git clone --depth=1 https://github.com/obsy/modemdata package/custom-feeds/obsy-modemdata
+# git clone --depth=1 https://github.com/obsy/modemband package/custom-feeds/obsy-modemband
 git clone --depth=1 https://github.com/FUjr/QModem package/custom-feeds/qmodem
-git clone --depth=1 https://github.com/4IceG/luci-app-modemband package/custom-feeds/luci-app-modemband
+# git clone --depth=1 https://github.com/4IceG/luci-app-modemband package/custom-feeds/luci-app-modemband
 git clone --depth=1 https://github.com/4IceG/luci-app-atinout package/custom-feeds/luci-app-atinout
-git clone --depth=1 https://github.com/nooblk-98/luci-app-3ginfo-lite package/custom-feeds/luci-app-3ginfo-lite
+# git clone --depth=1 https://github.com/nooblk-98/luci-app-3ginfo-lite package/custom-feeds/luci-app-3ginfo-lite
 cp -a "$GITHUB_WORKSPACE/packages/luci-app-aw1k-led" package/custom-feeds/luci-app-aw1k-led
 cp -a "$GITHUB_WORKSPACE/packages/luci-app-modemwebui" package/custom-feeds/luci-app-modemwebui
-git clone --depth=1 https://github.com/4IceG/luci-app-sms-tool-js package/custom-feeds/luci-app-sms-tool-js
+# git clone --depth=1 https://github.com/4IceG/luci-app-sms-tool-js package/custom-feeds/luci-app-sms-tool-js
 git clone --depth=1 https://github.com/4IceG/luci-app-qfirehose.git package/custom-feeds/luci-app-qfirehose
 git clone --depth=1 https://github.com/timsaya/openwrt-bandix package/custom-feeds/openwrt-bandix
 git clone --depth=1 https://github.com/timsaya/luci-app-bandix package/custom-feeds/luci-app-bandix
