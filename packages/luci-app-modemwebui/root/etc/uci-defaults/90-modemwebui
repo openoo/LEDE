@@ -1,0 +1,8 @@
+#!/bin/sh
+
+if [ -x /etc/init.d/modemwebui ]; then
+	/etc/init.d/modemwebui enable
+	/etc/init.d/modemwebui restart
+fi
+
+exit 0

@@ -1,0 +1,43 @@
+#!/bin/sh /etc/rc.common
+
+USE_PROCD=1
+
+START=99
+STOP=10
+
+NAME=modemwebui
+WEBUI_DIR="/www/webui/webui000"
+CONFIG_FILE="${WEBUI_DIR}/config.json"
+
+refresh_config() {
+	local lan_addr
+
+	lan_addr="$(uci -q get network.lan.ipaddr)"
+	[ -n "$lan_addr" ] || lan_addr="192.168.123.1"
+
+	if [ -f "${CONFIG_FILE}.bak" ]; then
+		cp -f "${CONFIG_FILE}.bak" "$CONFIG_FILE"
+	fi
+
+	if [ -f "$CONFIG_FILE" ]; then
+		sed -i "s/192\\.168\\.1\\.1/$lan_addr/g; s/192\\.168\\.17\\.1/$lan_addr/g" "$CONFIG_FILE"
+	fi
+}
+
+start_service() {
+	refresh_config
+
+	procd_open_instance
+	procd_set_param command /bin/sh -c "cd '$WEBUI_DIR' && exec /usr/bin/webuiserver"
+	procd_set_param respawn 3600 5 0
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_close_instance
+
+	rm -rf /tmp/luci-indexcache /tmp/luci-modulecache
+}
+
+reload_service() {
+	stop
+	start
+}
