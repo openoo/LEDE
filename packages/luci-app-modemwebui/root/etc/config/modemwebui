@@ -1,0 +1,4 @@
+config modemwebui 'settings'
+	option enabled '1'
+	option guard_enabled '1'
+	option guard_interval '30'
