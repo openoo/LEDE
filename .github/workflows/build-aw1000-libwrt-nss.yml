@@ -108,13 +108,15 @@ jobs:
                   path: |
                       ~/.ccache
                       /workdir/openwrt/dl
-                      /workdir/openwrt/build_dir/host
-                      /workdir/openwrt/build_dir/toolchain-*
-                      /workdir/openwrt/staging_dir/host
-                      /workdir/openwrt/staging_dir/toolchain-*
                   key: ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-${{ hashFiles('AW1000-NSS/.config', 'AW1000-NSS/diy.sh', 'AW1000-NSS/scripts/**', 'AW1000-NSS/files/**', 'packages/**') }}
                   restore-keys: |
                       ${{ runner.os }}-openwrt-AW1000-LiBwrt-NSS-${{ env.REPO_BRANCH }}-
+
+            - name: 🧯 限制 ccache 空间
+              run: |
+                  ccache -M 2G || true
+                  ccache -c || true
+                  df -h
 
             - name: 🛠️ 准备脚本和配置
               run: |
@@ -190,6 +192,8 @@ jobs:
               working-directory: ./openwrt
               run: |
                   rm -rf dl/go-mod-cache
+                  rm -rf ~/.npm ~/.cache/pip ~/.cache/node-gyp ~/.cargo/registry/cache 2>/dev/null || true
+                  df -h
 
             - name: 📦 下载源码包
               working-directory: ./openwrt
@@ -199,6 +203,10 @@ jobs:
                   make download -j8
                   find dl -size -1024c -exec ls -l {} \;
                   find dl -size -1024c -exec rm -f {} \;
+                  rm -rf dl/go-mod-cache
+                  rm -rf ~/.npm ~/.cache/pip ~/.cache/node-gyp ~/.cargo/registry/cache 2>/dev/null || true
+                  df -h
+                  du -h -d1 /workdir/openwrt | sort -h
 
             - name: 🔨 编译固件
               id: compile
@@ -206,6 +214,7 @@ jobs:
                   chmod -R 755 openwrt
                   cd openwrt
                   echo -e "$(nproc) thread compile"
+                  df -h
                   make -j$(nproc) || make -j1 V=s
                   echo "compile_status=success" >> $GITHUB_ENV
                   echo "status=success" >> $GITHUB_OUTPUT
