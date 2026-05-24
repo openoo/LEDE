@@ -2,7 +2,7 @@ include $(TOPDIR)/rules.mk
 
 PKG_NAME:=luci-app-aw1k-led
 PKG_VERSION:=1.0.1
-PKG_RELEASE:=1
+PKG_RELEASE:=2
 
 PKG_MAINTAINER:=NoobLk
 PKG_LICENSE:=GPL-3.0-or-later
@@ -19,6 +19,9 @@ define Package/$(PKG_NAME)/install
 
 	$(INSTALL_DIR) $(1)/etc/init.d
 	$(INSTALL_BIN) ./root/etc/init.d/ledstatus $(1)/etc/init.d/ledstatus
+	$(INSTALL_DIR) $(1)/etc/rc.d
+	$(LN) ../init.d/ledstatus $(1)/etc/rc.d/S99ledstatus
+	$(LN) ../init.d/ledstatus $(1)/etc/rc.d/K10ledstatus
 
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_CONF) ./root/etc/config/ledstatus $(1)/etc/config/ledstatus

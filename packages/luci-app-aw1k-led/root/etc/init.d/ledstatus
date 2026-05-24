@@ -10,6 +10,11 @@ start_service() {
     config_load ledstatus
     config_get enabled settings enabled '1'
 
+    if [ -d /sys/class/leds/green:power ]; then
+        echo none > /sys/class/leds/green:power/trigger
+        echo 1 > /sys/class/leds/green:power/brightness
+    fi
+
     /usr/bin/aw1000-phone-led-sync.sh
 
     [ "$enabled" = "0" ] && return 0
@@ -23,6 +28,8 @@ start_service() {
     procd_set_param command /usr/bin/led-status-check-daemon.sh
     procd_set_param respawn
     procd_close_instance
+
+    logger -t ledstatus "LED status service started"
 }
 
 stop_service() {
