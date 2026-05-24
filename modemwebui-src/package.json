@@ -1,0 +1,28 @@
+{
+  "name": "aw1000-rg500q-modemwebui-src",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Maintainable source project reconstructed from AW1000 RG500Q modem WebUI sourcemaps.",
+  "scripts": {
+    "dev": "max dev --host 0.0.0.0",
+    "build": "max build && node scripts/create-route-fallbacks.mjs",
+    "start": "max dev --host 0.0.0.0"
+  },
+  "dependencies": {
+    "@ant-design/icons": "^5.6.1",
+    "@ant-design/pro-components": "^2.8.10",
+    "@ant-design/v5-patch-for-react-19": "^1.0.3",
+    "@umijs/max": "^4.6.55",
+    "antd": "^5.29.3",
+    "antd-style": "^3.7.1",
+    "classnames": "^2.5.1",
+    "dayjs": "^1.11.20",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.15",
+    "@types/react-dom": "^19.2.3",
+    "typescript": "^5.9.3"
+  }
+}

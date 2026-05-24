@@ -1,0 +1,145 @@
+
+> aw1000-rg500q-modemwebui-src@0.1.0 dev
+> max dev --host 0.0.0.0
+
+info  - [你知道吗？] dev 模式下访问 /__umi 路由，可以发现很多有用的内部信息。
+info  - Umi v4.6.55
+info  - Preparing...
+(node:6944) Warning: `--localstorage-file` was provided without a valid path
+(Use `node --trace-warnings ...` to show where the warning was created)
+info  - MFSU eager strategy enabled
+info  - [MFSU][eager] restored cache
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+        ╔════════════════════════════════════════════════════╗
+        ║ App listening at:                                  ║
+        ║  >   Local: http://localhost:5174                  ║
+ready - ║  > Network: http://192.168.123.232:5174            ║
+        ║                                                    ║
+        ║ Now you can open browser with the above addresses↑ ║
+        ╚════════════════════════════════════════════════════╝
+info  - [MFSU][eager] worker init, takes 1050ms
+event - [Webpack] Compiled in 7219 ms (472 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+Watchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\System Volume Information'
+Watchpack Error (initial scan): Error: EINVAL: invalid argument, lstat 'C:\pagefile.sys'
+event - [Webpack] Compiled in 113 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 66 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 861 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 362 ms (446 modules)
+wait  - [Webpack] Compiling...
+X [ERROR] Could not resolve "C:\\Users\\Administrator\\Desktop\\AW1000\\modemwebui-src\\src\\.umi\\umi.ts"
+
+error - [icons] build failed: Error: Build failed with 1 error:
+error: Could not resolve "C:\\Users\\Administrator\\Desktop\\AW1000\\modemwebui-src\\src\\.umi\\umi.ts"
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+X [ERROR] Could not resolve "./core/defineApp"
+
+    src/.umi/exports.ts:5:26:
+      5 │ export { defineApp } from './core/defineApp'
+        ╵                           ~~~~~~~~~~~~~~~~~~
+
+event - [Webpack] Compiled in 14151 ms (446 modules)
+X [ERROR] Could not resolve "./testBrowser"
+
+    src/.umi/exports.ts:27:28:
+      27 │ export { TestBrowser } from './testBrowser';
+         ╵                             ~~~~~~~~~~~~~~~
+
+error - [icons] build failed: Error: Build failed with 2 errors:
+src/.umi/exports.ts:5:26: ERROR: Could not resolve "./core/defineApp"
+src/.umi/exports.ts:27:28: ERROR: Could not resolve "./testBrowser"
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 12777 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 15587 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 19038 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 58735 ms (460 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 24328 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 24664 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 25222 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 31937 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 26691 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 25280 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 22762 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 27863 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 35037 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 41332 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - config routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes changed, regenerate tmp files...
+event - [Webpack] Compiled in 41910 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - config routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes, routes changed, regenerate tmp files...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 44828 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+event - [Webpack] Compiled in 20017 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'C:\pagefile.sys'
+Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'C:\pagefile.sys'
+event - [Webpack] Compiled in 53330 ms (446 modules)
+wait  - [Webpack] Compiling...
+event - [MFSU][eager] start build deps
+info  - [MFSU] skip buildDeps
+Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'C:\pagefile.sys'
+event - [Webpack] Compiled in 24201 ms (446 modules)
+Watchpack Error (stats): Error: EINVAL: invalid argument, lstat 'C:\pagefile.sys'
