@@ -20,7 +20,7 @@ config ledstatus 'settings'
 
 	# 夜间模式
 	option night_enabled '0'
-	option night_start '24:00'
+	option night_start '23:00'
 	option night_end '07:00'
 
 	# Phone 灯用于 USB 共享网络设备插拔提示；AW1000 硬件只有 green:phone 单色灯。
