@@ -4,19 +4,17 @@
 uci -q set network.lan.ipaddr='10.10.10.1'
 uci -q set network.lan.netmask='255.255.255.0'
 
-if ! uci -q get network.usbv4 >/dev/null; then
-	uci set network.usbv4='interface'
-fi
-uci set network.usbv4.proto='dhcp'
-uci set network.usbv4.ifname='usb0'
+uci -q set network.usbv4='interface'
+uci -q set network.usbv4.proto='dhcp'
+uci -q delete network.usbv4.device
+uci -q delete network.usbv4.ifname
 
-if ! uci -q get network.usbv6 >/dev/null; then
-	uci set network.usbv6='interface'
-fi
-uci set network.usbv6.proto='dhcpv6'
-uci set network.usbv6.ifname='usb0'
-uci set network.usbv6.reqaddress='try'
-uci set network.usbv6.reqprefix='auto'
+uci -q set network.usbv6='interface'
+uci -q set network.usbv6.proto='dhcpv6'
+uci -q delete network.usbv6.device
+uci -q delete network.usbv6.ifname
+uci -q set network.usbv6.reqaddress='try'
+uci -q set network.usbv6.reqprefix='auto'
 
 wan_zone="$(uci show firewall | sed -n "s/^firewall\.\([^=]*\)\.name='wan'$/\1/p" | head -n1)"
 if [ -n "$wan_zone" ]; then

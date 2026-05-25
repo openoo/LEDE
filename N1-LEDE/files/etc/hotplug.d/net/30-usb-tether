@@ -1,0 +1,68 @@
+#!/bin/sh
+
+[ "$ACTION" = "add" ] || [ "$ACTION" = "remove" ] || exit 0
+[ -n "$INTERFACE" ] || exit 0
+
+case "$INTERFACE" in
+	lo|br-*|lan*|wan|wwan*|phy*-ap*|gre*|gretap*|erspan*|miireg|bonding_masters)
+		exit 0
+		;;
+esac
+
+if [ "$ACTION" = "remove" ]; then
+	configured_device="$(uci -q get network.usbv4.device)"
+	configured_ifname="$(uci -q get network.usbv4.ifname)"
+	if [ "$configured_device" = "$INTERFACE" ] || [ "$configured_ifname" = "$INTERFACE" ]; then
+		logger -t n1-usb-tether "USB tether interface ${INTERFACE} removed"
+		ifdown usbv4 2>/dev/null
+		ifdown usbv6 2>/dev/null
+	fi
+	exit 0
+fi
+
+device_path="$(readlink -f "/sys/class/net/${INTERFACE}/device" 2>/dev/null)"
+case "$device_path" in
+	*'/usb'*) ;;
+	*) exit 0 ;;
+esac
+
+driver="$(sed -n 's/^DRIVER=//p' "/sys/class/net/${INTERFACE}/device/uevent" 2>/dev/null | head -n1)"
+case "$driver" in
+	rndis_host|cdc_ether|cdc_ncm|cdc_mbim|ipheth) ;;
+	*) exit 0 ;;
+esac
+
+logger -t n1-usb-tether "detected USB tether interface ${INTERFACE} via ${driver}"
+
+uci -q set network.usbv4='interface'
+uci -q set network.usbv4.proto='dhcp'
+uci -q set network.usbv4.device="$INTERFACE"
+uci -q set network.usbv4.ifname="$INTERFACE"
+
+uci -q set network.usbv6='interface'
+uci -q set network.usbv6.proto='dhcpv6'
+uci -q set network.usbv6.device="$INTERFACE"
+uci -q set network.usbv6.ifname="$INTERFACE"
+uci -q set network.usbv6.reqaddress='try'
+uci -q set network.usbv6.reqprefix='auto'
+
+wan_zone="$(uci show firewall | sed -n "s/^firewall\.\([^=]*\)\.name='wan'$/\1/p" | head -n1)"
+if [ -n "$wan_zone" ]; then
+	current_networks="$(uci -q get firewall.${wan_zone}.network)"
+	case " $current_networks " in
+		*" usbv4 "*) ;;
+		*) uci -q add_list firewall.${wan_zone}.network='usbv4' ;;
+	esac
+	case " $current_networks " in
+		*" usbv6 "*) ;;
+		*) uci -q add_list firewall.${wan_zone}.network='usbv6' ;;
+	esac
+	uci commit firewall
+fi
+
+uci commit network
+
+ifdown usbv4 2>/dev/null
+ifdown usbv6 2>/dev/null
+ifup usbv4 2>/dev/null
+ifup usbv6 2>/dev/null
