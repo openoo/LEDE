@@ -137,7 +137,7 @@ ipheth
 - 在 `feeds update -a` 之后、`feeds install -a` 之前执行。
 - 替换 Go 工具链为 `sbwml/packages_lang_golang 26.x`。
 - 可选替换 pymumu SmartDNS。
-- 固定 `sms-tool` 到指定源码版本。
+- 自动更新 `sms-tool` 到 `obsy/sms_tool` 最新源码版本。
 - 删除默认 feeds 中会被自定义包替换的源码。
 
 [AW1000-NSS/diy.sh](AW1000-NSS/diy.sh)
