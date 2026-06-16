@@ -95,6 +95,11 @@ jobs:
                   git clone --single-branch --depth=1 --branch="$REPO_BRANCH" "$REPO_URL" openwrt
                   ln -sf /workdir/openwrt "$GITHUB_WORKSPACE/openwrt"
 
+            - name: 🩹 刷新 qosmio NSS bonding LAG 补丁
+              working-directory: ./openwrt
+              run: |
+                  "$GITHUB_WORKSPACE/AW1000-NSS/scripts/refresh-qosmio-bonding-lag-patch.sh"
+
             - name: 🧬 提取 LLVM BPF 预编译工具链
               working-directory: ./openwrt
               run: |
