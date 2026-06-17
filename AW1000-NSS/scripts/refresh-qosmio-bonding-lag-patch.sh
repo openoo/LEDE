@@ -84,18 +84,25 @@ patch = pathlib.Path(sys.argv[1])
 text = patch.read_text()
 
 replacements = [
-    (pathlib.Path(sys.argv[2]).read_text(), pathlib.Path(sys.argv[3]).read_text()),
-    (pathlib.Path(sys.argv[4]).read_text(), pathlib.Path(sys.argv[5]).read_text()),
+    ("ad_enable_collecting_distributing", pathlib.Path(sys.argv[2]).read_text(), pathlib.Path(sys.argv[3]).read_text()),
+    ("__bond_start_xmit", pathlib.Path(sys.argv[4]).read_text(), pathlib.Path(sys.argv[5]).read_text()),
 ]
 
-changed = False
-for old, new in replacements:
-    if old in text:
-        text = text.replace(old, new, 1)
-        changed = True
+changed = []
+missing = []
+for name, old, new in replacements:
+    if old not in text:
+        missing.append(name)
+        continue
+    text = text.replace(old, new, 1)
+    changed.append(name)
 
-if changed:
-    patch.write_text(text)
+if missing:
+    print(f"ERROR: failed to refresh hunks: {', '.join(missing)}", file=sys.stderr)
+    sys.exit(1)
+
+patch.write_text(text)
+print(f"refreshed hunks: {', '.join(changed)}")
 PY
 
 echo "==> 已刷新 qosmio bonding LAG NSS 补丁：$patch_file"
